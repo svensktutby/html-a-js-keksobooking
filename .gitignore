@@ -1,0 +1,19 @@
+# OS
+.DS_Store
+._*
+
+# Project
+.idea
+*.sublime*
+build/
+
+# NodeJS
+node_modules/
+npm-debug.log*
+
+# Other
+*.ai
+*.log
+*.pdf
+*.psd
+Thumbs.db
