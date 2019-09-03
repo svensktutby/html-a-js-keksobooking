@@ -63,6 +63,7 @@ var DWELLING_DATA = {
 };
 
 var map = document.querySelector('.map');
+var mapFiltersContainer = document.querySelector('.map__filters-container');
 var pinList = document.querySelector('.map__pins');
 var template = document.querySelector('template');
 var pinTemplate = template.content.querySelector('.map__pin');
@@ -218,11 +219,102 @@ var setPinList = function (pinListNode, pinNode, pinListData) {
   pinListNode.appendChild(fragment);
 };
 
-var dwellingAds = getRandomDwellingAds(ADS_QUANTITY);
+/**
+ * Writes text if element has the class
+ * @param {Object} elemNode The target DOM element
+ * @param {string} patternClass The Class of element
+ * @param {string} modificator The Class modificator
+ */
+var writeTextIfHasClass = function (elemNode, patternClass, modificator) {
+  if (elemNode.classList.contains(patternClass + '--' + modificator)) {
+    elemNode.textContent = modificator;
+  }
+};
 
-setPinList(pinList, pinTemplate, dwellingAds);
+/**
+ * Removes empty DOM elements
+ * @param {Object} list NodeList of elements
+ */
+var removeEmptyElements = function (list) {
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].textContent === '') {
+      list[i].parentElement.removeChild(list[i]);
+    }
+  }
+};
+
+/**
+ * Renders an advertising
+ * @param {Object} adNode The DocumentFragment element
+ * @param {Object} adData The dwelling data
+ * @return {Object}
+ */
+var renderAd = function (adNode, adData) {
+  var adItem = adNode.cloneNode(true);
+  var adTitle = adItem.querySelector('.popup__title');
+  var adAddress = adItem.querySelector('.popup__text--address');
+  var adPrice = adItem.querySelector('.popup__text--price');
+  var adType = adItem.querySelector('.popup__type');
+  var adCapacity = adItem.querySelector('.popup__text--capacity');
+  var adTime = adItem.querySelector('.popup__text--time');
+  var adFeatures = adItem.querySelectorAll('.popup__feature');
+  var adDescription = adItem.querySelector('.popup__description');
+  var adPhotos = adItem.querySelector('.popup__photos');
+  var adAvatar = adItem.querySelector('.popup__avatar');
+
+  adTitle.textContent = adData.offer.title;
+  adAddress.textContent = adData.offer.address;
+  adPrice.textContent = adData.offer.price + '₽/ночь';
+  adType.textContent = adData.offer.type;
+  adCapacity.textContent = adData.offer.rooms + ' комнаты для ' + adData.offer.guests + ' гостей';
+  adTime.textContent = 'Заезд после ' + adData.offer.checkin + ', выезд до ' + adData.offer.checkout;
+  adDescription.textContent = adData.offer.description;
+  adAvatar.src = adData.author.avatar;
+
+  var getAdFeatures = function () {
+    adData.offer.features.forEach(function (item) {
+      for (var i = 0; i < adFeatures.length; i++) {
+        writeTextIfHasClass(adFeatures[i], 'popup__feature', item);
+      }
+    });
+    removeEmptyElements(adFeatures);
+  };
+
+  var getAdPhotos = function () {
+    var img = adPhotos.querySelector('.popup__photo');
+    img.src = adData.offer.photos[0];
+    for (var i = 1; i < adData.offer.photos.length; i++) {
+      var newImg = img.cloneNode(true);
+      newImg.src = adData.offer.photos[i];
+      adPhotos.appendChild(newImg);
+    }
+  };
+
+  getAdFeatures();
+  getAdPhotos();
+
+  return adItem;
+};
+
+/**
+ * Places the Ad on the map
+ * @param {Object} adNode The DocumentFragment element
+ * @param {Object} adData The dwelling data
+ */
+var setAd = function (adNode, adData) {
+  var fragment = document.createDocumentFragment();
+  fragment.appendChild(renderAd(adNode, adData));
+  map.insertBefore(fragment, mapFiltersContainer);
+};
+
+// Сгенерированный массив с данными для объявлений
+var dwellingAds = getRandomDwellingAds(ADS_QUANTITY);
 
 if (map.classList.contains('map--faded')) {
   map.classList.remove('map--faded');
 }
+
+setPinList(pinList, pinTemplate, dwellingAds);
+setAd(adTemplate, dwellingAds[0]);
+
 
