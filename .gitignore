@@ -6,6 +6,7 @@
 .idea
 *.sublime*
 build/
+package-lock.json
 
 # NodeJS
 node_modules/
