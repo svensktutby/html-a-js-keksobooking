@@ -63,6 +63,8 @@ var DWELLING_DATA = {
 };
 
 var map = document.querySelector('.map');
+var adForm = document.querySelector('.ad-form');
+var adFormFieldsets = adForm.querySelectorAll('fieldset');
 var mapFiltersContainer = document.querySelector('.map__filters-container');
 var pinList = document.querySelector('.map__pins');
 var template = document.querySelector('template');
@@ -81,16 +83,16 @@ var getRandomInt = function (min, max) {
 
 /**
  * Returns a random item from an array
- * @param {Array} arr An array containing the items
+ * @param {Array} arr An array containing items
  * @return {string|number|boolean|null|undefined|Object}
  */
-var getRandomItemFromArray = function (arr) {
+var getRandomArrayItem = function (arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 };
 
 /**
  * Shuffles array in place
- * @param {Array} arr An array containing the items
+ * @param {Array} arr An array containing items
  * @param {boolean} isLength Flag for decrease the array length
  * @return {Array}
  */
@@ -106,8 +108,8 @@ var shuffleArray = function (arr, isLength) {
 };
 
 /**
- * Returns full path to the avatar image
- * @param {number} num Number of the avatar image
+ * Returns full path to an avatar image
+ * @param {number} num Number of an avatar image
  * @return {string}
  */
 var getAvatarPath = function (num) {
@@ -116,11 +118,11 @@ var getAvatarPath = function (num) {
 };
 
 /**
- * Returns type of the dwelling in Russian
+ * Returns type of a dwelling in Russian
  * @param {string} type Type in English
  * @return {string}
  */
-var getDwellingTypeinRussian = function (type) {
+var getDwellingTypeInRussian = function (type) {
   var dwellingTypeRu = '';
   switch (type) {
     case 'palace':
@@ -142,7 +144,7 @@ var getDwellingTypeinRussian = function (type) {
 };
 
 /**
- * Returns object for an advertisement
+ * Returns info for a dwelling advertisement
  * @param {Object} data Dataset object
  * @param {number} index
  * @return {Object}
@@ -159,11 +161,11 @@ var getRandomDwelling = function (data, index) {
       title: shuffleArray(data.TITLES, false)[index],
       address: locationX + ', ' + locationY,
       price: getRandomInt(data.price.MIN, data.price.MAX),
-      type: getDwellingTypeinRussian(getRandomItemFromArray(data.TYPES)),
+      type: getDwellingTypeInRussian(getRandomArrayItem(data.TYPES)),
       rooms: getRandomInt(data.rooms.MIN, data.rooms.MAX),
       guests: getRandomInt(data.guests.MIN, data.guests.MAX),
-      checkin: getRandomItemFromArray(data.CHECKIN_CHECKOUT),
-      checkout: getRandomItemFromArray(data.CHECKIN_CHECKOUT),
+      checkin: getRandomArrayItem(data.CHECKIN_CHECKOUT),
+      checkout: getRandomArrayItem(data.CHECKIN_CHECKOUT),
       features: shuffleArray(data.FEATURES, true),
       description: '',
       photos: shuffleArray(data.PHOTOS, false)
@@ -176,8 +178,8 @@ var getRandomDwelling = function (data, index) {
 };
 
 /**
- * Returns array with num random dwelling ads
- * @param {number} num Quantity of ads
+ * Returns an array with some random dwelling advertisements
+ * @param {number} num Quantity of advertisements
  * @return {Array}
  */
 var getRandomDwellingAds = function (num) {
@@ -190,8 +192,8 @@ var getRandomDwellingAds = function (num) {
 
 /**
  * Renders Popup Pin
- * @param {Object} pinNode The DocumentFragment element
- * @param {Object} pinData The dwelling data
+ * @param {Object} pinNode DocumentFragment element
+ * @param {Object} pinData Dwelling data
  * @return {Object}
  */
 var renderPin = function (pinNode, pinData) {
@@ -207,9 +209,9 @@ var renderPin = function (pinNode, pinData) {
 
 /**
  * Places Popup Pins on the map
- * @param {Object} pinListNode The target DOM element
- * @param {Object} pinNode The DocumentFragment element
- * @param {Array} pinListData The dwellings data
+ * @param {Object} pinListNode Target DOM element
+ * @param {Object} pinNode DocumentFragment element
+ * @param {Array} pinListData Dwellings data
  */
 var setPinList = function (pinListNode, pinNode, pinListData) {
   var fragment = document.createDocumentFragment();
@@ -220,20 +222,20 @@ var setPinList = function (pinListNode, pinNode, pinListData) {
 };
 
 /**
- * Writes text if element has the class
- * @param {Object} elemNode The target DOM element
- * @param {string} patternClass The Class of element
- * @param {string} modificator The Class modificator
+ * Writes text if element has the CSS class
+ * @param {Object} elemNode Target DOM element
+ * @param {string} patternClass CSS class of an element
+ * @param {string} modifier CSS class modifier
  */
-var writeTextIfHasClass = function (elemNode, patternClass, modificator) {
-  if (elemNode.classList.contains(patternClass + '--' + modificator)) {
-    elemNode.textContent = modificator;
+var writeTextIfHasClass = function (elemNode, patternClass, modifier) {
+  if (elemNode.classList.contains(patternClass + '--' + modifier)) {
+    elemNode.textContent = modifier;
   }
 };
 
 /**
  * Removes empty DOM elements
- * @param {Object} list NodeList of elements
+ * @param {Object} list NodeList elements
  */
 var removeEmptyElements = function (list) {
   for (var i = 0; i < list.length; i++) {
@@ -245,8 +247,8 @@ var removeEmptyElements = function (list) {
 
 /**
  * Renders an advertising
- * @param {Object} adNode The DocumentFragment element
- * @param {Object} adData The dwelling data
+ * @param {Object} adNode DocumentFragment element
+ * @param {Object} adData Dwelling data
  * @return {Object}
  */
 var renderAd = function (adNode, adData) {
@@ -297,9 +299,9 @@ var renderAd = function (adNode, adData) {
 };
 
 /**
- * Places the Ad on the map
- * @param {Object} adNode The DocumentFragment element
- * @param {Object} adData The dwelling data
+ * Places an Ad on the map
+ * @param {Object} adNode DocumentFragment element
+ * @param {Object} adData Dwelling data
  */
 var setAd = function (adNode, adData) {
   var fragment = document.createDocumentFragment();
@@ -307,14 +309,28 @@ var setAd = function (adNode, adData) {
   map.insertBefore(fragment, mapFiltersContainer);
 };
 
-// Сгенерированный массив с данными для объявлений
+/**
+ * Toggles attribute disabled for Form elements
+ * @param {Object} list NodeList elements
+ * @param {boolean} flag
+ */
+var toggleDisable = function (list, flag) {
+  list.forEach(function (item) {
+    item.disabled = flag;
+  });
+};
+
+// The generated array with advertisements data
 var dwellingAds = getRandomDwellingAds(ADS_QUANTITY);
 
-if (map.classList.contains('map--faded')) {
-  map.classList.remove('map--faded');
-}
+// adForm.classList.remove('ad-form--disabled');
+toggleDisable(adFormFieldsets, true);
 
-setPinList(pinList, pinTemplate, dwellingAds);
-setAd(adTemplate, dwellingAds[0]);
+// if (map.classList.contains('map--faded')) {
+//   map.classList.remove('map--faded');
+// }
+
+// setPinList(pinList, pinTemplate, dwellingAds);
+// setAd(adTemplate, dwellingAds[0]);
 
 
