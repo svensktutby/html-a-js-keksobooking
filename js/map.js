@@ -63,6 +63,7 @@ var DWELLING_DATA = {
 };
 
 var map = document.querySelector('.map');
+var mapPinMain = map.querySelector('.map__pin--main');
 var adForm = document.querySelector('.ad-form');
 var adFormFieldsets = adForm.querySelectorAll('fieldset');
 var mapFiltersContainer = document.querySelector('.map__filters-container');
@@ -92,8 +93,8 @@ var getRandomArrayItem = function (arr) {
 
 /**
  * Shuffles array in place
- * @param {Array} arr An array containing items
- * @param {boolean} isLength Flag for decrease the array length
+ * @param {Array} arr Array containing items
+ * @param {boolean} isLength Flag to reduce array length
  * @return {Array}
  */
 var shuffleArray = function (arr, isLength) {
@@ -108,8 +109,8 @@ var shuffleArray = function (arr, isLength) {
 };
 
 /**
- * Returns full path to an avatar image
- * @param {number} num Number of an avatar image
+ * Returns the full path to an avatar image
+ * @param {number} num Avatar image number
  * @return {string}
  */
 var getAvatarPath = function (num) {
@@ -118,7 +119,7 @@ var getAvatarPath = function (num) {
 };
 
 /**
- * Returns type of a dwelling in Russian
+ * Returns the type of dwelling in Russian
  * @param {string} type Type in English
  * @return {string}
  */
@@ -144,7 +145,7 @@ var getDwellingTypeInRussian = function (type) {
 };
 
 /**
- * Returns info for a dwelling advertisement
+ * Returns info for dwelling advertisement
  * @param {Object} data Dataset object
  * @param {number} index
  * @return {Object}
@@ -222,14 +223,14 @@ var setPinList = function (pinListNode, pinNode, pinListData) {
 };
 
 /**
- * Writes text if element has the CSS class
- * @param {Object} elemNode Target DOM element
+ * Writes text if the element has a CSS class
+ * @param {Object} nodeItem Target DOM element
  * @param {string} patternClass CSS class of an element
  * @param {string} modifier CSS class modifier
  */
-var writeTextIfHasClass = function (elemNode, patternClass, modifier) {
-  if (elemNode.classList.contains(patternClass + '--' + modifier)) {
-    elemNode.textContent = modifier;
+var writeTextIfHasClass = function (nodeItem, patternClass, modifier) {
+  if (nodeItem.classList.contains(patternClass + '--' + modifier)) {
+    nodeItem.textContent = modifier;
   }
 };
 
@@ -320,15 +321,29 @@ var toggleDisable = function (list, flag) {
   });
 };
 
-// The generated array with advertisements data
+/**
+ * Removes a CSS class from a DOM element
+ * @param {Object} nodeItem Target DOM element
+ * @param {string} cssClass CSS class of an element (without .point)
+ */
+var removeCssClass = function (nodeItem, cssClass) {
+  if (nodeItem.classList.contains(cssClass)) {
+    nodeItem.classList.remove(cssClass);
+  }
+};
+
+var activatePage = function () {
+  removeCssClass(map, 'map--faded');
+  removeCssClass(adForm, 'ad-form--disabled');
+  toggleDisable(adFormFieldsets, false);
+};
+
+// Generated advertisements data array
 var dwellingAds = getRandomDwellingAds(ADS_QUANTITY);
 
-// adForm.classList.remove('ad-form--disabled');
 toggleDisable(adFormFieldsets, true);
 
-// if (map.classList.contains('map--faded')) {
-//   map.classList.remove('map--faded');
-// }
+mapPinMain.addEventListener('mouseup', activatePage);
 
 // setPinList(pinList, pinTemplate, dwellingAds);
 // setAd(adTemplate, dwellingAds[0]);
