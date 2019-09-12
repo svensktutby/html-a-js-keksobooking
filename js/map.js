@@ -62,10 +62,32 @@ var DWELLING_DATA = {
   ]
 };
 
+var KEYCODES = {
+  ENTER: {
+    key: 'Enter',
+    keyCode: 13
+  },
+  ESCAPE: {
+    key: 'Escape',
+    keyCode: 27
+  }
+};
+
+var pinMainSize = {
+  WIDTH: 62,
+  HEIGHT: 82
+};
+
+var pinSize = {
+  WIDTH: 50,
+  HEIGHT: 70
+};
+
 var map = document.querySelector('.map');
 var mapPinMain = map.querySelector('.map__pin--main');
 var adForm = document.querySelector('.ad-form');
 var adFormFieldsets = adForm.querySelectorAll('fieldset');
+var adFormAddress = adForm.querySelector('#address');
 var mapFiltersContainer = document.querySelector('.map__filters-container');
 var pinList = document.querySelector('.map__pins');
 var template = document.querySelector('template');
@@ -247,70 +269,6 @@ var removeEmptyElements = function (list) {
 };
 
 /**
- * Renders an advertising
- * @param {Object} adNode DocumentFragment element
- * @param {Object} adData Dwelling data
- * @return {Object}
- */
-var renderAd = function (adNode, adData) {
-  var adItem = adNode.cloneNode(true);
-  var adTitle = adItem.querySelector('.popup__title');
-  var adAddress = adItem.querySelector('.popup__text--address');
-  var adPrice = adItem.querySelector('.popup__text--price');
-  var adType = adItem.querySelector('.popup__type');
-  var adCapacity = adItem.querySelector('.popup__text--capacity');
-  var adTime = adItem.querySelector('.popup__text--time');
-  var adFeatures = adItem.querySelectorAll('.popup__feature');
-  var adDescription = adItem.querySelector('.popup__description');
-  var adPhotos = adItem.querySelector('.popup__photos');
-  var adAvatar = adItem.querySelector('.popup__avatar');
-
-  adTitle.textContent = adData.offer.title;
-  adAddress.textContent = adData.offer.address;
-  adPrice.textContent = adData.offer.price + '₽/ночь';
-  adType.textContent = adData.offer.type;
-  adCapacity.textContent = adData.offer.rooms + ' комнаты для ' + adData.offer.guests + ' гостей';
-  adTime.textContent = 'Заезд после ' + adData.offer.checkin + ', выезд до ' + adData.offer.checkout;
-  adDescription.textContent = adData.offer.description;
-  adAvatar.src = adData.author.avatar;
-
-  var getAdFeatures = function () {
-    adData.offer.features.forEach(function (item) {
-      for (var i = 0; i < adFeatures.length; i++) {
-        writeTextIfHasClass(adFeatures[i], 'popup__feature', item);
-      }
-    });
-    removeEmptyElements(adFeatures);
-  };
-
-  var getAdPhotos = function () {
-    var img = adPhotos.querySelector('.popup__photo');
-    img.src = adData.offer.photos[0];
-    for (var i = 1; i < adData.offer.photos.length; i++) {
-      var newImg = img.cloneNode(true);
-      newImg.src = adData.offer.photos[i];
-      adPhotos.appendChild(newImg);
-    }
-  };
-
-  getAdFeatures();
-  getAdPhotos();
-
-  return adItem;
-};
-
-/**
- * Places an Ad on the map
- * @param {Object} adNode DocumentFragment element
- * @param {Object} adData Dwelling data
- */
-var setAd = function (adNode, adData) {
-  var fragment = document.createDocumentFragment();
-  fragment.appendChild(renderAd(adNode, adData));
-  map.insertBefore(fragment, mapFiltersContainer);
-};
-
-/**
  * Toggles attribute disabled for Form elements
  * @param {Object} list NodeList elements
  * @param {boolean} flag
@@ -332,20 +290,133 @@ var removeCssClass = function (nodeItem, cssClass) {
   }
 };
 
+/**
+ * Toggles a CSS class on a DOM element
+ * @param {Object} nodeItem Target DOM element or elements (not for FORMs)
+ * @param {string} cssClass CSS class on an element (without .point)
+ * @param {boolean} flag (false removes, true adds)
+ */
+var toggleClass = function (nodeItem, cssClass, flag) {
+  if (!nodeItem.length) {
+    nodeItem.classList.toggle(cssClass, flag);
+  } else {
+    for (var i = 0; i < nodeItem.length; i++) {
+      nodeItem[i].classList.toggle(cssClass, flag);
+    }
+  }
+};
+
+/**
+ * Returns a handler function for the pressed key
+ * @param {Object} obj Keycodes
+ * @param {Function} func Callback
+ * @return {Function}
+ */
+var keyPressHandler = function (obj, func) {
+  return function (evt) {
+    if (evt.key === obj.key || evt.keyCode === obj.keyCode) {
+      func();
+    }
+  };
+};
+
+/**
+ * Renders an advertising
+ * @param {Object} adNode DocumentFragment element
+ * @param {Object} adData Dwelling data
+ * @return {Object}
+ */
+var renderAd = function (adNode, adData) {
+  var adItem = adNode.cloneNode(true);
+  var adTitle = adItem.querySelector('.popup__title');
+  var adAddress = adItem.querySelector('.popup__text--address');
+  var adPrice = adItem.querySelector('.popup__text--price');
+  var adType = adItem.querySelector('.popup__type');
+  var adCapacity = adItem.querySelector('.popup__text--capacity');
+  var adTime = adItem.querySelector('.popup__text--time');
+  var adFeatures = adItem.querySelectorAll('.popup__feature');
+  var adDescription = adItem.querySelector('.popup__description');
+  var adPhotos = adItem.querySelector('.popup__photos');
+  var adAvatar = adItem.querySelector('.popup__avatar');
+  var adClose = adItem.querySelector('.popup__close');
+
+  adTitle.textContent = adData.offer.title;
+  adAddress.textContent = adData.offer.address;
+  adPrice.textContent = adData.offer.price + '₽/ночь';
+  adType.textContent = adData.offer.type;
+  adCapacity.textContent = adData.offer.rooms + ' комнаты для ' + adData.offer.guests + ' гостей';
+  adTime.textContent = 'Заезд после ' + adData.offer.checkin + ', выезд до ' + adData.offer.checkout;
+  adDescription.textContent = adData.offer.description;
+  adAvatar.src = adData.author.avatar;
+
+  var setAdFeatures = function () {
+    adData.offer.features.forEach(function (item) {
+      for (var i = 0; i < adFeatures.length; i++) {
+        writeTextIfHasClass(adFeatures[i], 'popup__feature', item);
+      }
+    });
+    removeEmptyElements(adFeatures);
+  };
+
+  var setAdPhotos = function () {
+    var img = adPhotos.querySelector('.popup__photo');
+    img.src = adData.offer.photos[0];
+    for (var i = 1; i < adData.offer.photos.length; i++) {
+      var newImg = img.cloneNode(true);
+      newImg.src = adData.offer.photos[i];
+      adPhotos.appendChild(newImg);
+    }
+  };
+
+  setAdFeatures();
+  setAdPhotos();
+
+  // adClose.addEventListener('click', );
+  // adClose.addEventListener('keydown', keyPressHandler(KEYCODES.ENTER, ));
+
+  return adItem;
+};
+
+/**
+ * Places an ad on the map
+ * @param {Object} adNode DocumentFragment element
+ * @param {Object} adData Dwelling data
+ */
+var setAd = function (adNode, adData) {
+  var fragment = document.createDocumentFragment();
+  fragment.appendChild(renderAd(adNode, adData));
+  map.insertBefore(fragment, mapFiltersContainer);
+};
+
+var getMapPinMainCoordinates = function () {
+  return {
+    x: mapPinMain.offsetLeft + (pinMainSize.WIDTH / 2),
+    y: mapPinMain.offsetTop + (pinMainSize.HEIGHT)
+  };
+};
+
+var setAddressValue = function (coord) {
+  adFormAddress.value = coord.x + ', ' + coord.y;
+};
+
 var activatePage = function () {
   removeCssClass(map, 'map--faded');
   removeCssClass(adForm, 'ad-form--disabled');
   toggleDisable(adFormFieldsets, false);
+  mapPinMain.removeEventListener('mouseup', activatePage);
+  setPinList(pinList, pinTemplate, dwellingAds);
+  // setAd(adTemplate, dwellingAds[0]);
+};
+
+var initPage = function () {
+  toggleDisable(adFormFieldsets, true);
+  setAddressValue(getMapPinMainCoordinates());
+  mapPinMain.addEventListener('mouseup', activatePage);
 };
 
 // Generated advertisements data array
 var dwellingAds = getRandomDwellingAds(ADS_QUANTITY);
 
-toggleDisable(adFormFieldsets, true);
-
-mapPinMain.addEventListener('mouseup', activatePage);
-
-// setPinList(pinList, pinTemplate, dwellingAds);
-// setAd(adTemplate, dwellingAds[0]);
+initPage();
 
 
