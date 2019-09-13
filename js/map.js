@@ -62,7 +62,33 @@ var DWELLING_DATA = {
   ]
 };
 
+var KEYCODES = {
+  ENTER: {
+    key: 'Enter',
+    keyCode: 13
+  },
+  ESCAPE: {
+    key: 'Escape',
+    keyCode: 27
+  }
+};
+
+var pinMainSize = {
+  WIDTH: 62,
+  HEIGHT: 82
+};
+
+var pinSize = {
+  WIDTH: 50,
+  HEIGHT: 70
+};
+
 var map = document.querySelector('.map');
+var mapPins = map.querySelector('.map__pins');
+var mapPinMain = map.querySelector('.map__pin--main');
+var adForm = document.querySelector('.ad-form');
+var adFormFieldsets = adForm.querySelectorAll('fieldset');
+var adFormAddress = adForm.querySelector('#address');
 var mapFiltersContainer = document.querySelector('.map__filters-container');
 var pinList = document.querySelector('.map__pins');
 var template = document.querySelector('template');
@@ -81,17 +107,17 @@ var getRandomInt = function (min, max) {
 
 /**
  * Returns a random item from an array
- * @param {Array} arr An array containing the items
+ * @param {Array} arr An array containing items
  * @return {string|number|boolean|null|undefined|Object}
  */
-var getRandomItemFromArray = function (arr) {
+var getRandomArrayItem = function (arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 };
 
 /**
  * Shuffles array in place
- * @param {Array} arr An array containing the items
- * @param {boolean} isLength Flag for decrease the array length
+ * @param {Array} arr Array containing items
+ * @param {boolean} isLength Flag to reduce array length
  * @return {Array}
  */
 var shuffleArray = function (arr, isLength) {
@@ -106,8 +132,8 @@ var shuffleArray = function (arr, isLength) {
 };
 
 /**
- * Returns full path to the avatar image
- * @param {number} num Number of the avatar image
+ * Returns the full path to an avatar image
+ * @param {number} num Avatar image number
  * @return {string}
  */
 var getAvatarPath = function (num) {
@@ -116,11 +142,11 @@ var getAvatarPath = function (num) {
 };
 
 /**
- * Returns type of the dwelling in Russian
+ * Returns the type of dwelling in Russian
  * @param {string} type Type in English
  * @return {string}
  */
-var getDwellingTypeinRussian = function (type) {
+var getDwellingTypeInRussian = function (type) {
   var dwellingTypeRu = '';
   switch (type) {
     case 'palace':
@@ -142,7 +168,7 @@ var getDwellingTypeinRussian = function (type) {
 };
 
 /**
- * Returns object for an advertisement
+ * Returns info for dwelling advertisement
  * @param {Object} data Dataset object
  * @param {number} index
  * @return {Object}
@@ -159,11 +185,11 @@ var getRandomDwelling = function (data, index) {
       title: shuffleArray(data.TITLES, false)[index],
       address: locationX + ', ' + locationY,
       price: getRandomInt(data.price.MIN, data.price.MAX),
-      type: getDwellingTypeinRussian(getRandomItemFromArray(data.TYPES)),
+      type: getDwellingTypeInRussian(getRandomArrayItem(data.TYPES)),
       rooms: getRandomInt(data.rooms.MIN, data.rooms.MAX),
       guests: getRandomInt(data.guests.MIN, data.guests.MAX),
-      checkin: getRandomItemFromArray(data.CHECKIN_CHECKOUT),
-      checkout: getRandomItemFromArray(data.CHECKIN_CHECKOUT),
+      checkin: getRandomArrayItem(data.CHECKIN_CHECKOUT),
+      checkout: getRandomArrayItem(data.CHECKIN_CHECKOUT),
       features: shuffleArray(data.FEATURES, true),
       description: '',
       photos: shuffleArray(data.PHOTOS, false)
@@ -176,8 +202,8 @@ var getRandomDwelling = function (data, index) {
 };
 
 /**
- * Returns array with num random dwelling ads
- * @param {number} num Quantity of ads
+ * Returns an array with some random dwelling advertisements
+ * @param {number} num Quantity of advertisements
  * @return {Array}
  */
 var getRandomDwellingAds = function (num) {
@@ -190,8 +216,8 @@ var getRandomDwellingAds = function (num) {
 
 /**
  * Renders Popup Pin
- * @param {Object} pinNode The DocumentFragment element
- * @param {Object} pinData The dwelling data
+ * @param {Object} pinNode DocumentFragment element
+ * @param {Object} pinData Dwelling data
  * @return {Object}
  */
 var renderPin = function (pinNode, pinData) {
@@ -207,9 +233,9 @@ var renderPin = function (pinNode, pinData) {
 
 /**
  * Places Popup Pins on the map
- * @param {Object} pinListNode The target DOM element
- * @param {Object} pinNode The DocumentFragment element
- * @param {Array} pinListData The dwellings data
+ * @param {Object} pinListNode Target DOM element
+ * @param {Object} pinNode DocumentFragment element
+ * @param {Array} pinListData Dwellings data
  */
 var setPinList = function (pinListNode, pinNode, pinListData) {
   var fragment = document.createDocumentFragment();
@@ -220,20 +246,20 @@ var setPinList = function (pinListNode, pinNode, pinListData) {
 };
 
 /**
- * Writes text if element has the class
- * @param {Object} elemNode The target DOM element
- * @param {string} patternClass The Class of element
- * @param {string} modificator The Class modificator
+ * Writes text if the element has a CSS class
+ * @param {Object} nodeItem Target DOM element
+ * @param {string} patternClass CSS class of an element
+ * @param {string} modifier CSS class modifier
  */
-var writeTextIfHasClass = function (elemNode, patternClass, modificator) {
-  if (elemNode.classList.contains(patternClass + '--' + modificator)) {
-    elemNode.textContent = modificator;
+var writeTextIfHasClass = function (nodeItem, patternClass, modifier) {
+  if (nodeItem.classList.contains(patternClass + '--' + modifier)) {
+    nodeItem.textContent = modifier;
   }
 };
 
 /**
  * Removes empty DOM elements
- * @param {Object} list NodeList of elements
+ * @param {Object} list NodeList elements
  */
 var removeEmptyElements = function (list) {
   for (var i = 0; i < list.length; i++) {
@@ -244,9 +270,72 @@ var removeEmptyElements = function (list) {
 };
 
 /**
+ * Toggles attribute disabled for Form elements
+ * @param {Object} list NodeList elements
+ * @param {boolean} flag
+ */
+var toggleDisable = function (list, flag) {
+  list.forEach(function (item) {
+    item.disabled = flag;
+  });
+};
+
+/**
+ * Removes a DOM element with a CSS class
+ * @param {Object} parentNodeItem Parent DOM element
+ * @param {string} cssClass CSS class of an element (with .point)
+ */
+var removeNodeItem = function (parentNodeItem, cssClass) {
+  if (parentNodeItem && parentNodeItem.querySelector(cssClass)) {
+    parentNodeItem.removeChild(parentNodeItem.querySelector(cssClass));
+  }
+};
+
+/**
+ * Removes a CSS class from a DOM element
+ * @param {Object} nodeItem Target DOM element
+ * @param {string} cssClass CSS class of an element (without .point)
+ */
+var removeCssClass = function (nodeItem, cssClass) {
+  if (nodeItem.classList.contains(cssClass)) {
+    nodeItem.classList.remove(cssClass);
+  }
+};
+
+/**
+ * Toggles a CSS class on a DOM element
+ * @param {Object} nodeItem Target DOM element or elements (not for FORMs)
+ * @param {string} cssClass CSS class on an element (without .point)
+ * @param {boolean} flag (false removes, true adds)
+ */
+var toggleClass = function (nodeItem, cssClass, flag) {
+  if (!nodeItem.length) {
+    nodeItem.classList.toggle(cssClass, flag);
+  } else {
+    for (var i = 0; i < nodeItem.length; i++) {
+      nodeItem[i].classList.toggle(cssClass, flag);
+    }
+  }
+};
+
+/**
+ * Returns a handler function for the pressed key
+ * @param {Object} obj Keycodes
+ * @param {Function} func Callback
+ * @return {Function}
+ */
+var keyPressHandler = function (obj, func) {
+  return function (evt) {
+    if (evt.key === obj.key || evt.keyCode === obj.keyCode) {
+      func();
+    }
+  };
+};
+
+/**
  * Renders an advertising
- * @param {Object} adNode The DocumentFragment element
- * @param {Object} adData The dwelling data
+ * @param {Object} adNode DocumentFragment element
+ * @param {Object} adData Dwelling data
  * @return {Object}
  */
 var renderAd = function (adNode, adData) {
@@ -261,6 +350,7 @@ var renderAd = function (adNode, adData) {
   var adDescription = adItem.querySelector('.popup__description');
   var adPhotos = adItem.querySelector('.popup__photos');
   var adAvatar = adItem.querySelector('.popup__avatar');
+  var adClose = adItem.querySelector('.popup__close');
 
   adTitle.textContent = adData.offer.title;
   adAddress.textContent = adData.offer.address;
@@ -271,7 +361,7 @@ var renderAd = function (adNode, adData) {
   adDescription.textContent = adData.offer.description;
   adAvatar.src = adData.author.avatar;
 
-  var getAdFeatures = function () {
+  var setAdFeatures = function () {
     adData.offer.features.forEach(function (item) {
       for (var i = 0; i < adFeatures.length; i++) {
         writeTextIfHasClass(adFeatures[i], 'popup__feature', item);
@@ -280,7 +370,7 @@ var renderAd = function (adNode, adData) {
     removeEmptyElements(adFeatures);
   };
 
-  var getAdPhotos = function () {
+  var setAdPhotos = function () {
     var img = adPhotos.querySelector('.popup__photo');
     img.src = adData.offer.photos[0];
     for (var i = 1; i < adData.offer.photos.length; i++) {
@@ -290,31 +380,100 @@ var renderAd = function (adNode, adData) {
     }
   };
 
-  getAdFeatures();
-  getAdPhotos();
+  setAdFeatures();
+  setAdPhotos();
+
+  // adClose.addEventListener('click', );
+  // adClose.addEventListener('keydown', keyPressHandler(KEYCODES.ENTER, ));
 
   return adItem;
 };
 
 /**
- * Places the Ad on the map
- * @param {Object} adNode The DocumentFragment element
- * @param {Object} adData The dwelling data
+ * Returns Main Pin coordinates
+ * @return {Object}
  */
-var setAd = function (adNode, adData) {
-  var fragment = document.createDocumentFragment();
-  fragment.appendChild(renderAd(adNode, adData));
-  map.insertBefore(fragment, mapFiltersContainer);
+var getMapPinMainCoordinates = function () {
+  return {
+    x: mapPinMain.offsetLeft + (pinMainSize.WIDTH / 2),
+    y: mapPinMain.offsetTop + (pinMainSize.HEIGHT)
+  };
 };
 
-// Сгенерированный массив с данными для объявлений
+/**
+ * Adds text to Address input in Form
+ * @param {Object} coord Main Pin coordinates
+ */
+var setAddressValue = function (coord) {
+  adFormAddress.value = coord.x + ', ' + coord.y;
+};
+
+/**
+ * Places ad on the map and adds some handlers
+ * @param {Object} adNode DocumentFragment element
+ * @param {Object} adData Dwelling data
+ * @param {number} inx Ad index from the Dwelling data
+ */
+var setAd = function (adNode, adData, inx) {
+  var fragment = document.createDocumentFragment();
+  fragment.appendChild(renderAd(adNode, adData[inx]));
+  map.insertBefore(fragment, mapFiltersContainer);
+
+  var mapCard = map.querySelector('.map__card');
+  var closeCard = mapCard.querySelector('.popup__close');
+  closeCard.addEventListener('click', closeCardHandler);
+  closeCard.addEventListener('keydown', keyPressHandler(KEYCODES.ENTER, closeCardHandler));
+  document.addEventListener('keydown', keyPressEscClose);
+};
+
+/**
+ * Adds an ad on the map if the pin was pressed or clicked
+ * @param {Object} evt
+ */
+var pinBtnHandler = function (evt) {
+  var target = evt.target;
+  var mapPinBtns = map.querySelectorAll('.map__pin');
+  var targetPinBtn = target.closest('.map__pin');
+  var targetInx = Array.from(mapPinBtns).indexOf(targetPinBtn);
+  if (targetPinBtn &&
+    !target.closest('.map__pin--main')) {
+    toggleClass(mapPinBtns, 'map__pin--active', false);
+    toggleClass(targetPinBtn, 'map__pin--active', true);
+    closeCardHandler();
+    setAd(adTemplate, dwellingAds, targetInx - 1);
+  } else {
+    evt.preventDefault();
+  }
+};
+
+/**
+ * Removes the ad from the map
+ */
+var closeCardHandler = function () {
+  removeNodeItem(map, '.map__card');
+  document.removeEventListener('keydown', keyPressEscClose);
+};
+
+var keyPressEscClose = keyPressHandler(KEYCODES.ESCAPE, closeCardHandler);
+
+var activatePage = function () {
+  removeCssClass(map, 'map--faded');
+  removeCssClass(adForm, 'ad-form--disabled');
+  toggleDisable(adFormFieldsets, false);
+  mapPinMain.removeEventListener('mouseup', activatePage);
+  setPinList(pinList, pinTemplate, dwellingAds);
+  mapPins.addEventListener('click', pinBtnHandler);
+};
+
+var initPage = function () {
+  toggleDisable(adFormFieldsets, true);
+  setAddressValue(getMapPinMainCoordinates());
+  mapPinMain.addEventListener('mouseup', activatePage);
+};
+
+// Generated advertisements data array
 var dwellingAds = getRandomDwellingAds(ADS_QUANTITY);
 
-if (map.classList.contains('map--faded')) {
-  map.classList.remove('map--faded');
-}
-
-setPinList(pinList, pinTemplate, dwellingAds);
-setAd(adTemplate, dwellingAds[0]);
+initPage();
 
 
