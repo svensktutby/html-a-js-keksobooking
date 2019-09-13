@@ -84,6 +84,7 @@ var pinSize = {
 };
 
 var map = document.querySelector('.map');
+var mapPins = map.querySelector('.map__pins');
 var mapPinMain = map.querySelector('.map__pin--main');
 var adForm = document.querySelector('.ad-form');
 var adFormFieldsets = adForm.querySelectorAll('fieldset');
@@ -280,6 +281,17 @@ var toggleDisable = function (list, flag) {
 };
 
 /**
+ * Removes a DOM element with a CSS class
+ * @param {Object} parentNodeItem Parent DOM element
+ * @param {string} cssClass CSS class of an element (with .point)
+ */
+var removeNodeItem = function (parentNodeItem, cssClass) {
+  if (parentNodeItem && parentNodeItem.querySelector(cssClass)) {
+    parentNodeItem.removeChild(parentNodeItem.querySelector(cssClass));
+  }
+};
+
+/**
  * Removes a CSS class from a DOM element
  * @param {Object} nodeItem Target DOM element
  * @param {string} cssClass CSS class of an element (without .point)
@@ -378,16 +390,9 @@ var renderAd = function (adNode, adData) {
 };
 
 /**
- * Places an ad on the map
- * @param {Object} adNode DocumentFragment element
- * @param {Object} adData Dwelling data
+ * Returns Main Pin coordinates
+ * @return {Object}
  */
-var setAd = function (adNode, adData) {
-  var fragment = document.createDocumentFragment();
-  fragment.appendChild(renderAd(adNode, adData));
-  map.insertBefore(fragment, mapFiltersContainer);
-};
-
 var getMapPinMainCoordinates = function () {
   return {
     x: mapPinMain.offsetLeft + (pinMainSize.WIDTH / 2),
@@ -395,9 +400,61 @@ var getMapPinMainCoordinates = function () {
   };
 };
 
+/**
+ * Adds text to Address input in Form
+ * @param {Object} coord Main Pin coordinates
+ */
 var setAddressValue = function (coord) {
   adFormAddress.value = coord.x + ', ' + coord.y;
 };
+
+/**
+ * Places ad on the map and adds some handlers
+ * @param {Object} adNode DocumentFragment element
+ * @param {Object} adData Dwelling data
+ * @param {number} inx Ad index from the Dwelling data
+ */
+var setAd = function (adNode, adData, inx) {
+  var fragment = document.createDocumentFragment();
+  fragment.appendChild(renderAd(adNode, adData[inx]));
+  map.insertBefore(fragment, mapFiltersContainer);
+
+  var mapCard = map.querySelector('.map__card');
+  var closeCard = mapCard.querySelector('.popup__close');
+  closeCard.addEventListener('click', closeCardHandler);
+  closeCard.addEventListener('keydown', keyPressHandler(KEYCODES.ENTER, closeCardHandler));
+  document.addEventListener('keydown', keyPressEscClose);
+};
+
+/**
+ * Adds an ad on the map if the pin was pressed or clicked
+ * @param {Object} evt
+ */
+var pinBtnHandler = function (evt) {
+  var target = evt.target;
+  var mapPinBtns = map.querySelectorAll('.map__pin');
+  var targetPinBtn = target.closest('.map__pin');
+  var targetInx = Array.from(mapPinBtns).indexOf(targetPinBtn);
+  if (targetPinBtn &&
+    !target.closest('.map__pin--main')) {
+    toggleClass(mapPinBtns, 'map__pin--active', false);
+    toggleClass(targetPinBtn, 'map__pin--active', true);
+    closeCardHandler();
+    setAd(adTemplate, dwellingAds, targetInx - 1);
+  } else {
+    evt.preventDefault();
+  }
+};
+
+/**
+ * Removes the ad from the map
+ */
+var closeCardHandler = function () {
+  removeNodeItem(map, '.map__card');
+  document.removeEventListener('keydown', keyPressEscClose);
+};
+
+var keyPressEscClose = keyPressHandler(KEYCODES.ESCAPE, closeCardHandler);
 
 var activatePage = function () {
   removeCssClass(map, 'map--faded');
@@ -405,7 +462,7 @@ var activatePage = function () {
   toggleDisable(adFormFieldsets, false);
   mapPinMain.removeEventListener('mouseup', activatePage);
   setPinList(pinList, pinTemplate, dwellingAds);
-  // setAd(adTemplate, dwellingAds[0]);
+  mapPins.addEventListener('click', pinBtnHandler);
 };
 
 var initPage = function () {
