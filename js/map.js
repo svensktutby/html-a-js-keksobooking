@@ -350,7 +350,6 @@ var renderAd = function (adNode, adData) {
   var adDescription = adItem.querySelector('.popup__description');
   var adPhotos = adItem.querySelector('.popup__photos');
   var adAvatar = adItem.querySelector('.popup__avatar');
-  var adClose = adItem.querySelector('.popup__close');
 
   adTitle.textContent = adData.offer.title;
   adAddress.textContent = adData.offer.address;
@@ -383,20 +382,19 @@ var renderAd = function (adNode, adData) {
   setAdFeatures();
   setAdPhotos();
 
-  // adClose.addEventListener('click', );
-  // adClose.addEventListener('keydown', keyPressHandler(KEYCODES.ENTER, ));
-
   return adItem;
 };
 
 /**
- * Returns Main Pin coordinates
+ * Returns Pin coordinates on the map
+ * @param {Object} nodeItem Target DOM element
+ * @param {Object} size Size of element
  * @return {Object}
  */
-var getMapPinMainCoordinates = function () {
+var getMapPinCoordinates = function (nodeItem, size) {
   return {
-    x: mapPinMain.offsetLeft + (pinMainSize.WIDTH / 2),
-    y: mapPinMain.offsetTop + (pinMainSize.HEIGHT)
+    x: nodeItem.offsetLeft + (size.WIDTH / 2),
+    y: nodeItem.offsetTop + (size.HEIGHT)
   };
 };
 
@@ -442,7 +440,7 @@ var pinBtnHandler = function (evt) {
     closeCardHandler();
     setAd(adTemplate, dwellingAds, targetInx - 1);
   } else {
-    evt.preventDefault();
+    evt.stopPropagation();
   }
 };
 
@@ -460,14 +458,14 @@ var activatePage = function () {
   removeCssClass(map, 'map--faded');
   removeCssClass(adForm, 'ad-form--disabled');
   toggleDisable(adFormFieldsets, false);
-  mapPinMain.removeEventListener('mouseup', activatePage);
   setPinList(pinList, pinTemplate, dwellingAds);
   mapPins.addEventListener('click', pinBtnHandler);
+  mapPinMain.removeEventListener('mouseup', activatePage);
 };
 
 var initPage = function () {
   toggleDisable(adFormFieldsets, true);
-  setAddressValue(getMapPinMainCoordinates());
+  setAddressValue(getMapPinCoordinates(mapPinMain, pinMainSize));
   mapPinMain.addEventListener('mouseup', activatePage);
 };
 
