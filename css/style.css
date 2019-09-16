@@ -636,6 +636,12 @@ fieldset {
           box-shadow: 0 0 2px 2px #ff6547;
 }
 
+.ad-form__element--invalid input,
+.ad-form__element--invalid select {
+  -webkit-box-shadow: 0 0 4px 4px #ff6547;
+  box-shadow: 0 0 4px 4px #ff6547;
+}
+
 .ad-form__element--time {
   -ms-flex-preferred-size: 50%;
       flex-basis: 50%;

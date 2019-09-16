@@ -1,67 +1,6 @@
 'use strict';
 
-var ADS_QUANTITY = 8;
-
-var AUTHOR_DATA = {
-  AVATAR_PATH: './img/avatars/user',
-  AVATAR_EXTENSION: '.png'
-};
-
-var DWELLING_DATA = {
-  TITLES: [
-    'Большая уютная квартира',
-    'Маленькая неуютная квартира',
-    'Огромный прекрасный дворец',
-    'Маленький ужасный дворец',
-    'Красивый гостевой домик',
-    'Некрасивый негостеприимный домик',
-    'Уютное бунгало далеко от моря',
-    'Неуютное бунгало по колено в воде'
-  ],
-  location: {
-    X_MIN: 300,
-    X_MAX: 900,
-    Y_MIN: 130,
-    Y_MAX: 630
-  },
-  price: {
-    MIN: 1000,
-    MAX: 1000000
-  },
-  rooms: {
-    MIN: 1,
-    MAX: 5
-  },
-  guests: {
-    MIN: 1,
-    MAX: 25
-  },
-  TYPES: [
-    'palace',
-    'flat',
-    'house',
-    'bungalo'
-  ],
-  CHECKIN_CHECKOUT: [
-    '12:00',
-    '13:00',
-    '14:00'
-  ],
-  FEATURES: [
-    'wifi',
-    'dishwasher',
-    'parking',
-    'washer',
-    'elevator',
-    'conditioner'
-  ],
-  PHOTOS: [
-    'http://o0.github.io/assets/images/tokyo/hotel1.jpg',
-    'http://o0.github.io/assets/images/tokyo/hotel2.jpg',
-    'http://o0.github.io/assets/images/tokyo/hotel3.jpg'
-  ]
-};
-
+// *************************************************** Utils
 var KEYCODES = {
   ENTER: {
     key: 'Enter',
@@ -72,28 +11,6 @@ var KEYCODES = {
     keyCode: 27
   }
 };
-
-var pinMainSize = {
-  WIDTH: 62,
-  HEIGHT: 82
-};
-
-var pinSize = {
-  WIDTH: 50,
-  HEIGHT: 70
-};
-
-var map = document.querySelector('.map');
-var mapPins = map.querySelector('.map__pins');
-var mapPinMain = map.querySelector('.map__pin--main');
-var adForm = document.querySelector('.ad-form');
-var adFormFieldsets = adForm.querySelectorAll('fieldset');
-var adFormAddress = adForm.querySelector('#address');
-var mapFiltersContainer = document.querySelector('.map__filters-container');
-var pinList = document.querySelector('.map__pins');
-var template = document.querySelector('template');
-var pinTemplate = template.content.querySelector('.map__pin');
-var adTemplate = template.content.querySelector('.map__card');
 
 /**
  * Returns a random number between min and max
@@ -129,132 +46,6 @@ var shuffleArray = function (arr, isLength) {
     arr[random] = choosen;
   }
   return arr.slice(0, length);
-};
-
-/**
- * Returns the full path to an avatar image
- * @param {number} num Avatar image number
- * @return {string}
- */
-var getAvatarPath = function (num) {
-  var numAvatar = num > 9 ? num : '0' + num;
-  return AUTHOR_DATA.AVATAR_PATH + numAvatar + AUTHOR_DATA.AVATAR_EXTENSION;
-};
-
-/**
- * Returns the type of dwelling in Russian
- * @param {string} type Type in English
- * @return {string}
- */
-var getDwellingTypeInRussian = function (type) {
-  var dwellingTypeRu = '';
-  switch (type) {
-    case 'palace':
-      dwellingTypeRu = 'Дворец';
-      break;
-    case 'flat':
-      dwellingTypeRu = 'Квартира';
-      break;
-    case 'house':
-      dwellingTypeRu = 'Дом';
-      break;
-    case 'bungalo':
-      dwellingTypeRu = 'Бунгало';
-      break;
-    default:
-      dwellingTypeRu = 'Неизвестный тип жилища';
-  }
-  return dwellingTypeRu;
-};
-
-/**
- * Returns info for dwelling advertisement
- * @param {Object} data Dataset object
- * @param {number} index
- * @return {Object}
- */
-var getRandomDwelling = function (data, index) {
-  var locationX = getRandomInt(data.location.X_MIN, data.location.X_MAX);
-  var locationY = getRandomInt(data.location.Y_MIN, data.location.Y_MAX);
-
-  return {
-    author: {
-      avatar: getAvatarPath(index + 1)
-    },
-    offer: {
-      title: shuffleArray(data.TITLES, false)[index],
-      address: locationX + ', ' + locationY,
-      price: getRandomInt(data.price.MIN, data.price.MAX),
-      type: getDwellingTypeInRussian(getRandomArrayItem(data.TYPES)),
-      rooms: getRandomInt(data.rooms.MIN, data.rooms.MAX),
-      guests: getRandomInt(data.guests.MIN, data.guests.MAX),
-      checkin: getRandomArrayItem(data.CHECKIN_CHECKOUT),
-      checkout: getRandomArrayItem(data.CHECKIN_CHECKOUT),
-      features: shuffleArray(data.FEATURES, true),
-      description: '',
-      photos: shuffleArray(data.PHOTOS, false)
-    },
-    location: {
-      x: locationX,
-      y: locationY
-    }
-  };
-};
-
-/**
- * Returns an array with some random dwelling advertisements
- * @param {number} num Quantity of advertisements
- * @return {Array}
- */
-var getRandomDwellingAds = function (num) {
-  var randomDwellingAds = [];
-  for (var i = 0; i < num; i++) {
-    randomDwellingAds.push(getRandomDwelling(DWELLING_DATA, i));
-  }
-  return randomDwellingAds;
-};
-
-/**
- * Renders Popup Pin
- * @param {Object} pinNode DocumentFragment element
- * @param {Object} pinData Dwelling data
- * @return {Object}
- */
-var renderPin = function (pinNode, pinData) {
-  var pinItem = pinNode.cloneNode(true);
-  var pinImg = pinItem.querySelector('img');
-
-  pinItem.style.left = pinData.location.x + 'px';
-  pinItem.style.top = pinData.location.y + 'px';
-  pinImg.src = pinData.author.avatar;
-  pinImg.alt = pinData.offer.title;
-  return pinItem;
-};
-
-/**
- * Places Popup Pins on the map
- * @param {Object} pinListNode Target DOM element
- * @param {Object} pinNode DocumentFragment element
- * @param {Array} pinListData Dwellings data
- */
-var setPinList = function (pinListNode, pinNode, pinListData) {
-  var fragment = document.createDocumentFragment();
-  pinListData.forEach(function (item) {
-    fragment.appendChild(renderPin(pinNode, item));
-  });
-  pinListNode.appendChild(fragment);
-};
-
-/**
- * Writes text if the element has a CSS class
- * @param {Object} nodeItem Target DOM element
- * @param {string} patternClass CSS class of an element
- * @param {string} modifier CSS class modifier
- */
-var writeTextIfHasClass = function (nodeItem, patternClass, modifier) {
-  if (nodeItem.classList.contains(patternClass + '--' + modifier)) {
-    nodeItem.textContent = modifier;
-  }
 };
 
 /**
@@ -332,6 +123,336 @@ var keyPressHandler = function (obj, func) {
   };
 };
 
+// *************************************************** DOM elements
+var map = document.querySelector('.map');
+var pinList = document.querySelector('.map__pins');
+var mapPinMain = map.querySelector('.map__pin--main');
+var mapFiltersContainer = document.querySelector('.map__filters-container');
+var template = document.querySelector('template');
+var pinTemplate = template.content.querySelector('.map__pin');
+var adTemplate = template.content.querySelector('.map__card');
+
+var adForm = document.querySelector('.ad-form');
+var adFormFieldsets = adForm.querySelectorAll('fieldset');
+var adFormTitle = adForm.querySelector('#title');
+var adFormAddress = adForm.querySelector('#address');
+var adFormType = adForm.querySelector('#type');
+var adFormPrice = adForm.querySelector('#price');
+var adFormTimein = adForm.querySelector('#timein');
+var adFormTimeout = adForm.querySelector('#timeout');
+var adFormRoomNumber = adForm.querySelector('#room_number');
+var adFormCapacity = adForm.querySelector('#capacity');
+var adFormCapacityOptions = adFormCapacity.querySelectorAll('option');
+var adFormSubmit = adForm.querySelector('.ad-form__submit');
+var adFormReset = adForm.querySelector('.ad-form__reset');
+var successMessage = document.querySelector('.success');
+var adFormRequireds = adForm.querySelectorAll('[required]');
+
+// *************************************************** Form
+var minDwellingPrice = {
+  bungalo: 0,
+  flat: 1000,
+  house: 5000,
+  palace: 10000
+};
+
+var timeStamps = ['12:00', '13:00', '14:00'];
+
+var roomForGuest = {
+  '1': ['1'],
+  '2': ['1', '2'],
+  '3': ['1', '2', '3'],
+  '100': ['0']
+};
+
+var adFormPriceHandler = function () {
+  for (var item in minDwellingPrice) {
+    if (item === adFormType.value) {
+      adFormPrice.placeholder = minDwellingPrice[item];
+    }
+  }
+};
+
+var adFormTimeHandler = function (evt) {
+  var target = evt.target;
+  timeStamps.forEach(function (item) {
+    if (target === adFormTimein && item === adFormTimein.value) {
+      adFormTimeout.value = adFormTimein.value;
+    } else if (target === adFormTimeout && item === adFormTimeout.value) {
+      adFormTimein.value = adFormTimeout.value;
+    }
+  });
+};
+
+var adFormRoomsHandler = function () {
+  var selectedRoomNumber = roomForGuest[adFormRoomNumber.value];
+  for (var i = 0; i < adFormCapacityOptions.length; i++) {
+    adFormCapacityOptions[i].disabled = true;
+    selectedRoomNumber.forEach(function (item) {
+      if (adFormCapacityOptions[i].value === item) {
+        adFormCapacityOptions[i].disabled = false;
+        adFormCapacityOptions[i].selected = true;
+      }
+    });
+  }
+};
+
+var successClickHandler = function () {
+  successMessage.classList.add('hidden');
+  successMessage.removeEventListener('click', successClickHandler);
+  document.removeEventListener('keydown', successPressEscHandler);
+};
+
+var successPressEscHandler = keyPressHandler(KEYCODES.ESCAPE, successClickHandler);
+
+var adFormResetHandler = function () {
+  adForm.reset();
+  initPage();
+  var mapPins = map.querySelectorAll('.map__pin');
+  var invalidElements = adForm.querySelectorAll('.ad-form__element--invalid');
+  removeNodeItem(map, '.map__card');
+  mapPins.forEach(function (item) {
+    if (item !== mapPinMain) {
+      item.parentElement.removeChild(item);
+    }
+  });
+  if (invalidElements.length) {
+    invalidElements.forEach(function (item) {
+      toggleClass(item, 'ad-form__element--invalid', false);
+    });
+  }
+  toggleClass(map, 'map--faded', true);
+  adForm.classList.add('ad-form--disabled');
+};
+
+/**
+ * Validates and submits adForm
+ * @param {Object} evt
+ */
+var adFormSubmitHandler = function (evt) {
+  var invalidRequireds = [];
+  for (var i = 0; i < adFormRequireds.length; i++) {
+    var adFieldset = adFormRequireds[i].closest('.ad-form__element');
+    if (!adFormRequireds[i].validity.valid) {
+      invalidRequireds.push(adFormRequireds[i]);
+      toggleClass(adFieldset, 'ad-form__element--invalid', true);
+    } else {
+      toggleClass(adFieldset, 'ad-form__element--invalid', false);
+    }
+  }
+  if (invalidRequireds.length) {
+    evt.preventDefault();
+  } else {
+    successMessage.classList.remove('hidden');
+    successMessage.addEventListener('click', successClickHandler);
+    document.addEventListener('keydown', successPressEscHandler);
+  }
+};
+
+var initFormHandlers = function () {
+  adFormType.addEventListener('change', adFormPriceHandler);
+  adFormTimein.addEventListener('change', adFormTimeHandler);
+  adFormTimeout.addEventListener('change', adFormTimeHandler);
+  adFormRoomsHandler();
+  adFormRoomNumber.addEventListener('change', adFormRoomsHandler);
+  adFormSubmit.addEventListener('click', adFormSubmitHandler);
+  adFormReset.addEventListener('click', adFormResetHandler);
+};
+
+// *************************************************** Map
+var ADS_QUANTITY = 8;
+
+var AUTHOR_DATA = {
+  AVATAR_PATH: './img/avatars/user',
+  AVATAR_EXTENSION: '.png'
+};
+
+var DWELLING_DATA = {
+  TITLES: [
+    'Большая уютная квартира',
+    'Маленькая неуютная квартира',
+    'Огромный прекрасный дворец',
+    'Маленький ужасный дворец',
+    'Красивый гостевой домик',
+    'Некрасивый негостеприимный домик',
+    'Уютное бунгало далеко от моря',
+    'Неуютное бунгало по колено в воде'
+  ],
+  location: {
+    X_MIN: 300,
+    X_MAX: 900,
+    Y_MIN: 130,
+    Y_MAX: 630
+  },
+  price: {
+    MIN: 1000,
+    MAX: 1000000
+  },
+  rooms: {
+    MIN: 1,
+    MAX: 5
+  },
+  guests: {
+    MIN: 1,
+    MAX: 25
+  },
+  TYPES: [
+    'palace',
+    'flat',
+    'house',
+    'bungalo'
+  ],
+  CHECKIN_CHECKOUT: [
+    '12:00',
+    '13:00',
+    '14:00'
+  ],
+  FEATURES: [
+    'wifi',
+    'dishwasher',
+    'parking',
+    'washer',
+    'elevator',
+    'conditioner'
+  ],
+  PHOTOS: [
+    'http://o0.github.io/assets/images/tokyo/hotel1.jpg',
+    'http://o0.github.io/assets/images/tokyo/hotel2.jpg',
+    'http://o0.github.io/assets/images/tokyo/hotel3.jpg'
+  ]
+};
+
+var pinMainSize = {
+  WIDTH: 62,
+  HEIGHT: 82
+};
+
+/**
+ * Returns the full path to an avatar image
+ * @param {number} num Avatar image number
+ * @return {string}
+ */
+var getAvatarPath = function (num) {
+  var numAvatar = num > 9 ? num : '0' + num;
+  return AUTHOR_DATA.AVATAR_PATH + numAvatar + AUTHOR_DATA.AVATAR_EXTENSION;
+};
+
+/**
+ * Returns the type of dwelling in Russian
+ * @param {string} type Type in English
+ * @return {string}
+ */
+var getDwellingTypeInRussian = function (type) {
+  var dwellingTypeRu = '';
+  switch (type) {
+    case 'palace':
+      dwellingTypeRu = 'Дворец';
+      break;
+    case 'flat':
+      dwellingTypeRu = 'Квартира';
+      break;
+    case 'house':
+      dwellingTypeRu = 'Дом';
+      break;
+    case 'bungalo':
+      dwellingTypeRu = 'Бунгало';
+      break;
+    default:
+      dwellingTypeRu = 'Неизвестный тип жилища';
+  }
+  return dwellingTypeRu;
+};
+
+/**
+ * Returns info for dwelling advertisement
+ * @param {Object} data Dataset object
+ * @param {number} index
+ * @return {Object}
+ */
+var getRandomDwelling = function (data, index) {
+  var locationX = getRandomInt(data.location.X_MIN, data.location.X_MAX);
+  var locationY = getRandomInt(data.location.Y_MIN, data.location.Y_MAX);
+
+  return {
+    author: {
+      avatar: getAvatarPath(index + 1)
+    },
+    offer: {
+      title: shuffleArray(data.TITLES, false)[index],
+      address: locationX + ', ' + locationY,
+      price: getRandomInt(data.price.MIN, data.price.MAX + 1),
+      type: getDwellingTypeInRussian(getRandomArrayItem(data.TYPES)),
+      rooms: getRandomInt(data.rooms.MIN, data.rooms.MAX + 1),
+      guests: getRandomInt(data.guests.MIN, data.guests.MAX + 1),
+      checkin: getRandomArrayItem(data.CHECKIN_CHECKOUT),
+      checkout: getRandomArrayItem(data.CHECKIN_CHECKOUT),
+      features: shuffleArray(data.FEATURES, true),
+      description: '',
+      photos: shuffleArray(data.PHOTOS, false)
+    },
+    location: {
+      x: locationX,
+      y: locationY
+    }
+  };
+};
+
+/**
+ * Returns an array with some random dwelling advertisements
+ * @param {number} num Quantity of advertisements
+ * @return {Array}
+ */
+var getRandomDwellingAds = function (num) {
+  var randomDwellingAds = [];
+  for (var i = 0; i < num; i++) {
+    randomDwellingAds.push(getRandomDwelling(DWELLING_DATA, i));
+  }
+  return randomDwellingAds;
+};
+
+/**
+ * Renders Popup Pin
+ * @param {Object} pinNode DocumentFragment element
+ * @param {Object} pinData Dwelling data
+ * @return {Object}
+ */
+var renderPin = function (pinNode, pinData) {
+  var pinItem = pinNode.cloneNode(true);
+  var pinImg = pinItem.querySelector('img');
+
+  pinItem.style.left = pinData.location.x + 'px';
+  pinItem.style.top = pinData.location.y + 'px';
+  pinImg.src = pinData.author.avatar;
+  pinImg.alt = pinData.offer.title;
+  return pinItem;
+};
+
+/**
+ * Places Popup Pins on the map
+ * @param {Object} pinListNode Target DOM element
+ * @param {Object} pinNode DocumentFragment element
+ * @param {Array} pinListData Dwellings data
+ */
+var setPinList = function (pinListNode, pinNode, pinListData) {
+  var fragment = document.createDocumentFragment();
+  pinListData.forEach(function (item) {
+    fragment.appendChild(renderPin(pinNode, item));
+  });
+  pinListNode.appendChild(fragment);
+};
+
+/**
+ * Writes text if the element has a CSS class
+ * @param {Object} nodeItem Target DOM element
+ * @param {string} patternClass CSS class of an element
+ * @param {string} modifier CSS class modifier
+ */
+var writeTextIfHasClass = function (nodeItem, patternClass, modifier) {
+  if (nodeItem.classList.contains(patternClass + '--' + modifier)) {
+    nodeItem.textContent = modifier;
+  }
+};
+
 /**
  * Renders an advertising
  * @param {Object} adNode DocumentFragment element
@@ -350,7 +471,6 @@ var renderAd = function (adNode, adData) {
   var adDescription = adItem.querySelector('.popup__description');
   var adPhotos = adItem.querySelector('.popup__photos');
   var adAvatar = adItem.querySelector('.popup__avatar');
-  var adClose = adItem.querySelector('.popup__close');
 
   adTitle.textContent = adData.offer.title;
   adAddress.textContent = adData.offer.address;
@@ -383,29 +503,38 @@ var renderAd = function (adNode, adData) {
   setAdFeatures();
   setAdPhotos();
 
-  // adClose.addEventListener('click', );
-  // adClose.addEventListener('keydown', keyPressHandler(KEYCODES.ENTER, ));
-
   return adItem;
 };
 
 /**
- * Returns Main Pin coordinates
+ * Adds text to input in Form
+ * @param {Object} nodeItem Target DOM element
+ * @param {string|number|boolean|null|undefined|Object} text
+ */
+var setInputValue = function (nodeItem, text) {
+  nodeItem.value = text;
+};
+
+/**
+ * Returns Pin coordinates from the map
+ * @param {Object} nodeItem Target DOM element
+ * @param {Object} size Size of element
  * @return {Object}
  */
-var getMapPinMainCoordinates = function () {
+var getMapPinCoordinates = function (nodeItem, size) {
   return {
-    x: mapPinMain.offsetLeft + (pinMainSize.WIDTH / 2),
-    y: mapPinMain.offsetTop + (pinMainSize.HEIGHT)
+    x: nodeItem.offsetLeft + (size.WIDTH / 2),
+    y: nodeItem.offsetTop + (size.HEIGHT)
   };
 };
 
 /**
- * Adds text to Address input in Form
- * @param {Object} coord Main Pin coordinates
+ * Returns text to Address input in Form
+ * @param {Object} coord Pin coordinates
+ * @return {string}
  */
-var setAddressValue = function (coord) {
-  adFormAddress.value = coord.x + ', ' + coord.y;
+var getAddressValue = function (coord) {
+  return coord.x + ', ' + coord.y;
 };
 
 /**
@@ -430,19 +559,18 @@ var setAd = function (adNode, adData, inx) {
  * Adds an ad on the map if the pin was pressed or clicked
  * @param {Object} evt
  */
-var pinBtnHandler = function (evt) {
+var pinHandler = function (evt) {
   var target = evt.target;
-  var mapPinBtns = map.querySelectorAll('.map__pin');
-  var targetPinBtn = target.closest('.map__pin');
-  var targetInx = Array.from(mapPinBtns).indexOf(targetPinBtn);
-  if (targetPinBtn &&
-    !target.closest('.map__pin--main')) {
-    toggleClass(mapPinBtns, 'map__pin--active', false);
-    toggleClass(targetPinBtn, 'map__pin--active', true);
+  var mapPins = map.querySelectorAll('.map__pin');
+  var targetPin = target.closest('.map__pin');
+  if (!targetPin || target.closest('.map__pin--main')) {
+    evt.stopPropagation();
+  } else {
+    var targetInx = Array.from(mapPins).indexOf(targetPin);
+    toggleClass(mapPins, 'map__pin--active', false);
+    toggleClass(targetPin, 'map__pin--active', true);
     closeCardHandler();
     setAd(adTemplate, dwellingAds, targetInx - 1);
-  } else {
-    evt.preventDefault();
   }
 };
 
@@ -460,14 +588,15 @@ var activatePage = function () {
   removeCssClass(map, 'map--faded');
   removeCssClass(adForm, 'ad-form--disabled');
   toggleDisable(adFormFieldsets, false);
-  mapPinMain.removeEventListener('mouseup', activatePage);
   setPinList(pinList, pinTemplate, dwellingAds);
-  mapPins.addEventListener('click', pinBtnHandler);
+  pinList.addEventListener('click', pinHandler);
+  mapPinMain.removeEventListener('mouseup', activatePage);
+  initFormHandlers();
 };
 
 var initPage = function () {
   toggleDisable(adFormFieldsets, true);
-  setAddressValue(getMapPinMainCoordinates());
+  setInputValue(adFormAddress, getAddressValue(getMapPinCoordinates(mapPinMain, pinMainSize)));
   mapPinMain.addEventListener('mouseup', activatePage);
 };
 
