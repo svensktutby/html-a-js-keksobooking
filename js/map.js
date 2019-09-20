@@ -112,15 +112,24 @@ var toggleClass = function (nodeItem, cssClass, flag) {
 /**
  * Returns a handler function for the pressed key
  * @param {Object} obj Keycodes
- * @param {Function} func Callback
+ * @param {Function} action Callback
  * @return {Function}
  */
-var keyPressHandler = function (obj, func) {
+var keyPressHandler = function (obj, action) {
   return function (evt) {
     if (evt.key === obj.key || evt.keyCode === obj.keyCode) {
-      func();
+      action();
     }
   };
+};
+
+/**
+ * Adds text to input in Form
+ * @param {Object} nodeItem Target DOM element
+ * @param {string|number|boolean|null|undefined|Object} text
+ */
+var setInputValue = function (nodeItem, text) {
+  nodeItem.value = text;
 };
 
 // *************************************************** DOM elements
@@ -134,7 +143,6 @@ var adTemplate = template.content.querySelector('.map__card');
 
 var adForm = document.querySelector('.ad-form');
 var adFormFieldsets = adForm.querySelectorAll('fieldset');
-var adFormTitle = adForm.querySelector('#title');
 var adFormAddress = adForm.querySelector('#address');
 var adFormType = adForm.querySelector('#type');
 var adFormPrice = adForm.querySelector('#price');
@@ -147,6 +155,104 @@ var adFormSubmit = adForm.querySelector('.ad-form__submit');
 var adFormReset = adForm.querySelector('.ad-form__reset');
 var successMessage = document.querySelector('.success');
 var adFormRequireds = adForm.querySelectorAll('[required]');
+
+// *************************************************** Pin
+var mapLimitPoints = {
+  top: 130,
+  bottom: 630,
+  left: 0,
+  right: parseInt(getComputedStyle(map).width, 10) // max width of map
+};
+
+var pinMainSize = {
+  WIDTH: 62,
+  HEIGHT: 82
+};
+
+/**
+ * Returns text to Address input in Form
+ * @param {Object} coords Pin coordinates
+ * @return {string}
+ */
+var getAddressValue = function (coords) {
+  return coords.x + ', ' + coords.y;
+};
+
+/**
+ * Returns Pin coordinates from the map
+ * @param {Object} nodeItem Target DOM element
+ * @param {Object} size Size of element
+ * @return {Object}
+ */
+
+var getMapPinCoordinates = function (nodeItem, size) {
+  return {
+    x: nodeItem.offsetLeft + (size.WIDTH / 2),
+    y: nodeItem.offsetTop + (size.HEIGHT)
+  };
+};
+
+var startMapPinMainAddressValue = getMapPinCoordinates(mapPinMain, pinMainSize);
+var startMapPinMainCoordinates = mapPinMain.getAttribute('style');
+
+var resetMapPinMain = function () {
+  setInputValue(adFormAddress, getAddressValue(startMapPinMainAddressValue));
+  mapPinMain.setAttribute('style', startMapPinMainCoordinates);
+};
+
+var pinMainMousedownHanler = function (evt) {
+  evt.preventDefault();
+
+  var startCoords = {
+    x: evt.clientX,
+    y: evt.clientY
+  };
+
+  var onMouseMove = function (moveEvt) {
+    moveEvt.preventDefault();
+
+    var shift = {
+      x: moveEvt.clientX - startCoords.x,
+      y: moveEvt.clientY - startCoords.y
+    };
+
+    startCoords = {
+      x: moveEvt.clientX,
+      y: moveEvt.clientY
+    };
+
+    var currentCoords = {
+      x: mapPinMain.offsetLeft + shift.x,
+      y: mapPinMain.offsetTop + shift.y
+    };
+
+    mapLimitPoints.right = parseInt(getComputedStyle(map).width, 10);
+
+    if (currentCoords.x < mapLimitPoints.left) {
+      currentCoords.x = mapPinMain.offsetLeft;
+    } else if (currentCoords.x > mapLimitPoints.right - pinMainSize.WIDTH) {
+      currentCoords.x = mapPinMain.offsetLeft;
+    }
+
+    if (currentCoords.y < mapLimitPoints.top || currentCoords.y > mapLimitPoints.bottom) {
+      currentCoords.y = mapPinMain.offsetTop;
+    }
+
+    mapPinMain.style.left = currentCoords.x + 'px';
+    mapPinMain.style.top = currentCoords.y + 'px';
+    setInputValue(adFormAddress, getAddressValue(getMapPinCoordinates(mapPinMain, pinMainSize)));
+  };
+
+  var onMouseUp = function (upEvt) {
+    upEvt.preventDefault();
+
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+  };
+
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mouseup', onMouseUp);
+};
 
 // *************************************************** Form
 var minDwellingPrice = {
@@ -208,6 +314,7 @@ var successPressEscHandler = keyPressHandler(KEYCODES.ESCAPE, successClickHandle
 var adFormResetHandler = function () {
   adForm.reset();
   initPage();
+  resetMapPinMain();
   var mapPins = map.querySelectorAll('.map__pin');
   var invalidElements = adForm.querySelectorAll('.ad-form__element--invalid');
   removeNodeItem(map, '.map__card');
@@ -320,11 +427,6 @@ var DWELLING_DATA = {
     'http://o0.github.io/assets/images/tokyo/hotel2.jpg',
     'http://o0.github.io/assets/images/tokyo/hotel3.jpg'
   ]
-};
-
-var pinMainSize = {
-  WIDTH: 62,
-  HEIGHT: 82
 };
 
 /**
@@ -507,37 +609,6 @@ var renderAd = function (adNode, adData) {
 };
 
 /**
- * Adds text to input in Form
- * @param {Object} nodeItem Target DOM element
- * @param {string|number|boolean|null|undefined|Object} text
- */
-var setInputValue = function (nodeItem, text) {
-  nodeItem.value = text;
-};
-
-/**
- * Returns Pin coordinates from the map
- * @param {Object} nodeItem Target DOM element
- * @param {Object} size Size of element
- * @return {Object}
- */
-var getMapPinCoordinates = function (nodeItem, size) {
-  return {
-    x: nodeItem.offsetLeft + (size.WIDTH / 2),
-    y: nodeItem.offsetTop + (size.HEIGHT)
-  };
-};
-
-/**
- * Returns text to Address input in Form
- * @param {Object} coord Pin coordinates
- * @return {string}
- */
-var getAddressValue = function (coord) {
-  return coord.x + ', ' + coord.y;
-};
-
-/**
  * Places ad on the map and adds some handlers
  * @param {Object} adNode DocumentFragment element
  * @param {Object} adData Dwelling data
@@ -549,17 +620,17 @@ var setAd = function (adNode, adData, inx) {
   map.insertBefore(fragment, mapFiltersContainer);
 
   var mapCard = map.querySelector('.map__card');
-  var closeCard = mapCard.querySelector('.popup__close');
-  closeCard.addEventListener('click', closeCardHandler);
-  closeCard.addEventListener('keydown', keyPressHandler(KEYCODES.ENTER, closeCardHandler));
-  document.addEventListener('keydown', keyPressEscClose);
+  var popupClose = mapCard.querySelector('.popup__close');
+  popupClose.addEventListener('click', closeCard);
+  popupClose.addEventListener('keydown', keyPressHandler(KEYCODES.ENTER, closeCard));
+  document.addEventListener('keydown', escPressCloseHandler);
 };
 
 /**
  * Adds an ad on the map if the pin was pressed or clicked
  * @param {Object} evt
  */
-var pinHandler = function (evt) {
+var pinClickHandler = function (evt) {
   var target = evt.target;
   var mapPins = map.querySelectorAll('.map__pin');
   var targetPin = target.closest('.map__pin');
@@ -569,7 +640,7 @@ var pinHandler = function (evt) {
     var targetInx = Array.from(mapPins).indexOf(targetPin);
     toggleClass(mapPins, 'map__pin--active', false);
     toggleClass(targetPin, 'map__pin--active', true);
-    closeCardHandler();
+    closeCard();
     setAd(adTemplate, dwellingAds, targetInx - 1);
   }
 };
@@ -577,27 +648,28 @@ var pinHandler = function (evt) {
 /**
  * Removes the ad from the map
  */
-var closeCardHandler = function () {
+var closeCard = function () {
   removeNodeItem(map, '.map__card');
-  document.removeEventListener('keydown', keyPressEscClose);
+  document.removeEventListener('keydown', escPressCloseHandler);
 };
 
-var keyPressEscClose = keyPressHandler(KEYCODES.ESCAPE, closeCardHandler);
+var escPressCloseHandler = keyPressHandler(KEYCODES.ESCAPE, closeCard);
 
 var activatePage = function () {
   removeCssClass(map, 'map--faded');
   removeCssClass(adForm, 'ad-form--disabled');
   toggleDisable(adFormFieldsets, false);
   setPinList(pinList, pinTemplate, dwellingAds);
-  pinList.addEventListener('click', pinHandler);
-  mapPinMain.removeEventListener('mouseup', activatePage);
+  pinList.addEventListener('click', pinClickHandler);
+  mapPinMain.removeEventListener('mousedown', activatePage);
   initFormHandlers();
 };
 
 var initPage = function () {
   toggleDisable(adFormFieldsets, true);
   setInputValue(adFormAddress, getAddressValue(getMapPinCoordinates(mapPinMain, pinMainSize)));
-  mapPinMain.addEventListener('mouseup', activatePage);
+  mapPinMain.addEventListener('mousedown', activatePage);
+  mapPinMain.addEventListener('mousedown', pinMainMousedownHanler);
 };
 
 // Generated advertisements data array
