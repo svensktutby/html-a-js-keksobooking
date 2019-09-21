@@ -1,136 +1,6 @@
 'use strict';
 
-// *************************************************** Utils
-var KEYCODES = {
-  ENTER: {
-    key: 'Enter',
-    keyCode: 13
-  },
-  ESCAPE: {
-    key: 'Escape',
-    keyCode: 27
-  }
-};
-
-/**
- * Returns a random number between min and max
- * @param {number} min (inclusive)
- * @param {number} max (exclusive)
- * @return {number} integer number
- */
-var getRandomInt = function (min, max) {
-  return Math.floor(Math.random() * (max - min)) + min;
-};
-
-/**
- * Returns a random item from an array
- * @param {Array} arr An array containing items
- * @return {string|number|boolean|null|undefined|Object}
- */
-var getRandomArrayItem = function (arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-};
-
-/**
- * Shuffles array in place
- * @param {Array} arr Array containing items
- * @param {boolean} isLength Flag to reduce array length
- * @return {Array}
- */
-var shuffleArray = function (arr, isLength) {
-  var length = !isLength ? arr.length : getRandomInt(0, arr.length);
-  for (var i = length - 1; i > 0; i--) {
-    var random = Math.floor(Math.random() * length);
-    var choosen = arr[i];
-    arr[i] = arr[random];
-    arr[random] = choosen;
-  }
-  return arr.slice(0, length);
-};
-
-/**
- * Removes empty DOM elements
- * @param {Object} list NodeList elements
- */
-var removeEmptyElements = function (list) {
-  for (var i = 0; i < list.length; i++) {
-    if (list[i].textContent === '') {
-      list[i].parentElement.removeChild(list[i]);
-    }
-  }
-};
-
-/**
- * Toggles attribute disabled for Form elements
- * @param {Object} list NodeList elements
- * @param {boolean} flag
- */
-var toggleDisable = function (list, flag) {
-  list.forEach(function (item) {
-    item.disabled = flag;
-  });
-};
-
-/**
- * Removes a DOM element with a CSS class
- * @param {Object} parentNodeItem Parent DOM element
- * @param {string} cssClass CSS class of an element (with .point)
- */
-var removeNodeItem = function (parentNodeItem, cssClass) {
-  if (parentNodeItem && parentNodeItem.querySelector(cssClass)) {
-    parentNodeItem.removeChild(parentNodeItem.querySelector(cssClass));
-  }
-};
-
-/**
- * Removes a CSS class from a DOM element
- * @param {Object} nodeItem Target DOM element
- * @param {string} cssClass CSS class of an element (without .point)
- */
-var removeCssClass = function (nodeItem, cssClass) {
-  if (nodeItem.classList.contains(cssClass)) {
-    nodeItem.classList.remove(cssClass);
-  }
-};
-
-/**
- * Toggles a CSS class on a DOM element
- * @param {Object} nodeItem Target DOM element or elements (not for FORMs)
- * @param {string} cssClass CSS class on an element (without .point)
- * @param {boolean} flag (false removes, true adds)
- */
-var toggleClass = function (nodeItem, cssClass, flag) {
-  if (!nodeItem.length) {
-    nodeItem.classList.toggle(cssClass, flag);
-  } else {
-    for (var i = 0; i < nodeItem.length; i++) {
-      nodeItem[i].classList.toggle(cssClass, flag);
-    }
-  }
-};
-
-/**
- * Returns a handler function for the pressed key
- * @param {Object} obj Keycodes
- * @param {Function} action Callback
- * @return {Function}
- */
-var keyPressHandler = function (obj, action) {
-  return function (evt) {
-    if (evt.key === obj.key || evt.keyCode === obj.keyCode) {
-      action();
-    }
-  };
-};
-
-/**
- * Adds text to input in Form
- * @param {Object} nodeItem Target DOM element
- * @param {string|number|boolean|null|undefined|Object} text
- */
-var setInputValue = function (nodeItem, text) {
-  nodeItem.value = text;
-};
+var UTILS = window.utils;
 
 // *************************************************** DOM elements
 var map = document.querySelector('.map');
@@ -196,11 +66,11 @@ var startMapPinMainAddressValue = getMapPinCoordinates(mapPinMain, pinMainSize);
 var startMapPinMainCoordinates = mapPinMain.getAttribute('style');
 
 var resetMapPinMain = function () {
-  setInputValue(adFormAddress, getAddressValue(startMapPinMainAddressValue));
+  UTILS.setInputValue(adFormAddress, getAddressValue(startMapPinMainAddressValue));
   mapPinMain.setAttribute('style', startMapPinMainCoordinates);
 };
 
-var pinMainMousedownHanler = function (evt) {
+var pinMainMousedownHandler = function (evt) {
   evt.preventDefault();
 
   var startCoords = {
@@ -240,7 +110,7 @@ var pinMainMousedownHanler = function (evt) {
 
     mapPinMain.style.left = currentCoords.x + 'px';
     mapPinMain.style.top = currentCoords.y + 'px';
-    setInputValue(adFormAddress, getAddressValue(getMapPinCoordinates(mapPinMain, pinMainSize)));
+    UTILS.setInputValue(adFormAddress, getAddressValue(getMapPinCoordinates(mapPinMain, pinMainSize)));
   };
 
   var onMouseUp = function (upEvt) {
@@ -309,7 +179,7 @@ var successClickHandler = function () {
   document.removeEventListener('keydown', successPressEscHandler);
 };
 
-var successPressEscHandler = keyPressHandler(KEYCODES.ESCAPE, successClickHandler);
+var successPressEscHandler = UTILS.keyPressHandler(UTILS.ESCAPE, successClickHandler);
 
 var adFormResetHandler = function () {
   adForm.reset();
@@ -317,7 +187,7 @@ var adFormResetHandler = function () {
   resetMapPinMain();
   var mapPins = map.querySelectorAll('.map__pin');
   var invalidElements = adForm.querySelectorAll('.ad-form__element--invalid');
-  removeNodeItem(map, '.map__card');
+  UTILS.removeNodeItem(map, '.map__card');
   mapPins.forEach(function (item) {
     if (item !== mapPinMain) {
       item.parentElement.removeChild(item);
@@ -325,10 +195,10 @@ var adFormResetHandler = function () {
   });
   if (invalidElements.length) {
     invalidElements.forEach(function (item) {
-      toggleClass(item, 'ad-form__element--invalid', false);
+      UTILS.toggleClass(item, 'ad-form__element--invalid', false);
     });
   }
-  toggleClass(map, 'map--faded', true);
+  UTILS.toggleClass(map, 'map--faded', true);
   adForm.classList.add('ad-form--disabled');
 };
 
@@ -342,9 +212,9 @@ var adFormSubmitHandler = function (evt) {
     var adFieldset = adFormRequireds[i].closest('.ad-form__element');
     if (!adFormRequireds[i].validity.valid) {
       invalidRequireds.push(adFormRequireds[i]);
-      toggleClass(adFieldset, 'ad-form__element--invalid', true);
+      UTILS.toggleClass(adFieldset, 'ad-form__element--invalid', true);
     } else {
-      toggleClass(adFieldset, 'ad-form__element--invalid', false);
+      UTILS.toggleClass(adFieldset, 'ad-form__element--invalid', false);
     }
   }
   if (invalidRequireds.length) {
@@ -472,25 +342,25 @@ var getDwellingTypeInRussian = function (type) {
  * @return {Object}
  */
 var getRandomDwelling = function (data, index) {
-  var locationX = getRandomInt(data.location.X_MIN, data.location.X_MAX);
-  var locationY = getRandomInt(data.location.Y_MIN, data.location.Y_MAX);
+  var locationX = UTILS.getRandomInt(data.location.X_MIN, data.location.X_MAX);
+  var locationY = UTILS.getRandomInt(data.location.Y_MIN, data.location.Y_MAX);
 
   return {
     author: {
       avatar: getAvatarPath(index + 1)
     },
     offer: {
-      title: shuffleArray(data.TITLES, false)[index],
+      title: UTILS.shuffleArray(data.TITLES, false)[index],
       address: locationX + ', ' + locationY,
-      price: getRandomInt(data.price.MIN, data.price.MAX + 1),
-      type: getDwellingTypeInRussian(getRandomArrayItem(data.TYPES)),
-      rooms: getRandomInt(data.rooms.MIN, data.rooms.MAX + 1),
-      guests: getRandomInt(data.guests.MIN, data.guests.MAX + 1),
-      checkin: getRandomArrayItem(data.CHECKIN_CHECKOUT),
-      checkout: getRandomArrayItem(data.CHECKIN_CHECKOUT),
-      features: shuffleArray(data.FEATURES, true),
+      price: UTILS.getRandomInt(data.price.MIN, data.price.MAX),
+      type: getDwellingTypeInRussian(UTILS.getRandomArrayItem(data.TYPES)),
+      rooms: UTILS.getRandomInt(data.rooms.MIN, data.rooms.MAX),
+      guests: UTILS.getRandomInt(data.guests.MIN, data.guests.MAX),
+      checkin: UTILS.getRandomArrayItem(data.CHECKIN_CHECKOUT),
+      checkout: UTILS.getRandomArrayItem(data.CHECKIN_CHECKOUT),
+      features: UTILS.shuffleArray(data.FEATURES, true),
       description: '',
-      photos: shuffleArray(data.PHOTOS, false)
+      photos: UTILS.shuffleArray(data.PHOTOS, false)
     },
     location: {
       x: locationX,
@@ -589,7 +459,7 @@ var renderAd = function (adNode, adData) {
         writeTextIfHasClass(adFeatures[i], 'popup__feature', item);
       }
     });
-    removeEmptyElements(adFeatures);
+    UTILS.removeEmptyElements(adFeatures);
   };
 
   var setAdPhotos = function () {
@@ -622,7 +492,7 @@ var setAd = function (adNode, adData, inx) {
   var mapCard = map.querySelector('.map__card');
   var popupClose = mapCard.querySelector('.popup__close');
   popupClose.addEventListener('click', closeCard);
-  popupClose.addEventListener('keydown', keyPressHandler(KEYCODES.ENTER, closeCard));
+  popupClose.addEventListener('keydown', UTILS.keyPressHandler(UTILS.ENTER, closeCard));
   document.addEventListener('keydown', escPressCloseHandler);
 };
 
@@ -638,8 +508,8 @@ var pinClickHandler = function (evt) {
     evt.stopPropagation();
   } else {
     var targetInx = Array.from(mapPins).indexOf(targetPin);
-    toggleClass(mapPins, 'map__pin--active', false);
-    toggleClass(targetPin, 'map__pin--active', true);
+    UTILS.toggleClass(mapPins, 'map__pin--active', false);
+    UTILS.toggleClass(targetPin, 'map__pin--active', true);
     closeCard();
     setAd(adTemplate, dwellingAds, targetInx - 1);
   }
@@ -649,16 +519,16 @@ var pinClickHandler = function (evt) {
  * Removes the ad from the map
  */
 var closeCard = function () {
-  removeNodeItem(map, '.map__card');
+  UTILS.removeNodeItem(map, '.map__card');
   document.removeEventListener('keydown', escPressCloseHandler);
 };
 
-var escPressCloseHandler = keyPressHandler(KEYCODES.ESCAPE, closeCard);
+var escPressCloseHandler = UTILS.keyPressHandler(UTILS.ESCAPE, closeCard);
 
 var activatePage = function () {
-  removeCssClass(map, 'map--faded');
-  removeCssClass(adForm, 'ad-form--disabled');
-  toggleDisable(adFormFieldsets, false);
+  UTILS.removeCssClass(map, 'map--faded');
+  UTILS.removeCssClass(adForm, 'ad-form--disabled');
+  UTILS.toggleDisable(adFormFieldsets, false);
   setPinList(pinList, pinTemplate, dwellingAds);
   pinList.addEventListener('click', pinClickHandler);
   mapPinMain.removeEventListener('mousedown', activatePage);
@@ -666,10 +536,10 @@ var activatePage = function () {
 };
 
 var initPage = function () {
-  toggleDisable(adFormFieldsets, true);
-  setInputValue(adFormAddress, getAddressValue(getMapPinCoordinates(mapPinMain, pinMainSize)));
+  UTILS.toggleDisable(adFormFieldsets, true);
+  UTILS.setInputValue(adFormAddress, getAddressValue(getMapPinCoordinates(mapPinMain, pinMainSize)));
   mapPinMain.addEventListener('mousedown', activatePage);
-  mapPinMain.addEventListener('mousedown', pinMainMousedownHanler);
+  mapPinMain.addEventListener('mousedown', pinMainMousedownHandler);
 };
 
 // Generated advertisements data array
