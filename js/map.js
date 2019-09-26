@@ -74,14 +74,19 @@
 
   var errorHandler = function (errorMessage) {
     var node = document.createElement('div');
+    var timeout = 5000;
     node.style = 'z-index: 100; margin: 0 auto; text-align: center; background-color: red;';
-    node.style.position = 'absolute';
+    node.style.position = 'fixed';
     node.style.left = 0;
     node.style.right = 0;
     node.style.fontSize = '30px';
 
     node.textContent = errorMessage;
     document.body.insertAdjacentElement('afterbegin', node);
+
+    setTimeout(function () {
+      document.body.removeChild(node);
+    }, timeout);
   };
 
   var pinLoadHandler = function (data) {
@@ -112,6 +117,7 @@
   initPage();
 
   window.map = {
+    errorHandler: errorHandler,
     initPage: initPage
   };
 })();
