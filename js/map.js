@@ -3,11 +3,14 @@
 (function () {
   var UTILS = window.utils;
 
+  var dwellingData;
+
   var map = document.querySelector('.map');
   var pinList = document.querySelector('.map__pins');
   var mapPinMain = map.querySelector('.map__pin--main');
   var template = document.querySelector('template');
   var pinTemplate = template.content.querySelector('.map__pin');
+  var adTemplate = template.content.querySelector('.map__card');
 
   var adForm = document.querySelector('.ad-form');
   var adFormFieldsets = adForm.querySelectorAll('fieldset');
@@ -50,6 +53,25 @@
     pinListNode.appendChild(fragment);
   };
 
+  /**
+   * Adds an ad on the map if the pin was pressed or clicked
+   * @param {Object} evt
+   */
+  var pinClickHandler = function (evt) {
+    var target = evt.target;
+    var mapPins = map.querySelectorAll('.map__pin');
+    var targetPin = target.closest('.map__pin');
+    if (!targetPin || target.closest('.map__pin--main')) {
+      evt.stopPropagation();
+    } else {
+      var targetInx = Array.from(mapPins).indexOf(targetPin);
+      UTILS.toggleClass(mapPins, 'map__pin--active', false);
+      UTILS.toggleClass(targetPin, 'map__pin--active', true);
+      window.card.closeCard();
+      window.card.setAd(adTemplate, dwellingData, targetInx - 1);
+    }
+  };
+
   var errorHandler = function (errorMessage) {
     var node = document.createElement('div');
     node.style = 'z-index: 100; margin: 0 auto; text-align: center; background-color: red;';
@@ -63,8 +85,9 @@
   };
 
   var pinLoadHandler = function (data) {
+    dwellingData = data;
     setPinList(pinList, pinTemplate, pinSize, data);
-    pinList.addEventListener('click', window.card.pinClickHandler);
+    pinList.addEventListener('click', pinClickHandler);
   };
 
 
@@ -81,7 +104,7 @@
   var initPage = function () {
     UTILS.toggleDisable(adFormFieldsets, true);
     window.pin.resetMapPinMain();
-    pinList.removeEventListener('click', window.card.pinClickHandler);
+    pinList.removeEventListener('click', pinClickHandler);
     mapPinMain.addEventListener('mousedown', activatePage);
     mapPinMain.addEventListener('mousedown', window.pin.pinMainMousedownHandler);
   };
