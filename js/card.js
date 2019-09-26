@@ -19,6 +19,32 @@
   };
 
   /**
+   * Returns the type of dwelling in Russian
+   * @param {string} type Type in English
+   * @return {string}
+   */
+  var getDwellingTypeInRussian = function (type) {
+    var dwellingTypeRu = '';
+    switch (type) {
+      case 'palace':
+        dwellingTypeRu = 'Дворец';
+        break;
+      case 'flat':
+        dwellingTypeRu = 'Квартира';
+        break;
+      case 'house':
+        dwellingTypeRu = 'Дом';
+        break;
+      case 'bungalo':
+        dwellingTypeRu = 'Бунгало';
+        break;
+      default:
+        dwellingTypeRu = 'Неизвестный тип жилища';
+    }
+    return dwellingTypeRu;
+  };
+
+  /**
    * Renders an advertising
    * @param {Object} adNode DocumentFragment element
    * @param {Object} adData Dwelling data
@@ -40,7 +66,7 @@
     adTitle.textContent = adData.offer.title;
     adAddress.textContent = adData.offer.address;
     adPrice.textContent = adData.offer.price + '₽/ночь';
-    adType.textContent = adData.offer.type;
+    adType.textContent = getDwellingTypeInRussian(adData.offer.type);
     adCapacity.textContent = adData.offer.rooms + ' комнаты для ' + adData.offer.guests + ' гостей';
     adTime.textContent = 'Заезд после ' + adData.offer.checkin + ', выезд до ' + adData.offer.checkout;
     adDescription.textContent = adData.offer.description;
