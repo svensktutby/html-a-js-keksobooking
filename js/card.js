@@ -5,8 +5,6 @@
 
   var map = document.querySelector('.map');
   var mapFiltersContainer = document.querySelector('.map__filters-container');
-  var template = document.querySelector('template');
-  var adTemplate = template.content.querySelector('.map__card');
 
   /**
    * Writes text if the element has a CSS class
@@ -18,6 +16,32 @@
     if (nodeItem.classList.contains(patternClass + '--' + modifier)) {
       nodeItem.textContent = modifier;
     }
+  };
+
+  /**
+   * Returns the type of dwelling in Russian
+   * @param {string} type Type in English
+   * @return {string}
+   */
+  var getDwellingTypeInRussian = function (type) {
+    var dwellingTypeRu = '';
+    switch (type) {
+      case 'palace':
+        dwellingTypeRu = 'Дворец';
+        break;
+      case 'flat':
+        dwellingTypeRu = 'Квартира';
+        break;
+      case 'house':
+        dwellingTypeRu = 'Дом';
+        break;
+      case 'bungalo':
+        dwellingTypeRu = 'Бунгало';
+        break;
+      default:
+        dwellingTypeRu = 'Неизвестный тип жилища';
+    }
+    return dwellingTypeRu;
   };
 
   /**
@@ -42,7 +66,7 @@
     adTitle.textContent = adData.offer.title;
     adAddress.textContent = adData.offer.address;
     adPrice.textContent = adData.offer.price + '₽/ночь';
-    adType.textContent = adData.offer.type;
+    adType.textContent = getDwellingTypeInRussian(adData.offer.type);
     adCapacity.textContent = adData.offer.rooms + ' комнаты для ' + adData.offer.guests + ' гостей';
     adTime.textContent = 'Заезд после ' + adData.offer.checkin + ', выезд до ' + adData.offer.checkout;
     adDescription.textContent = adData.offer.description;
@@ -59,11 +83,15 @@
 
     var setAdPhotos = function () {
       var img = adPhotos.querySelector('.popup__photo');
-      img.src = adData.offer.photos[0];
-      for (var i = 1; i < adData.offer.photos.length; i++) {
-        var newImg = img.cloneNode(true);
-        newImg.src = adData.offer.photos[i];
-        adPhotos.appendChild(newImg);
+      if (adData.offer.photos[0]) {
+        img.src = adData.offer.photos[0];
+        for (var i = 1; i < adData.offer.photos.length; i++) {
+          var newImg = img.cloneNode(true);
+          newImg.src = adData.offer.photos[i];
+          adPhotos.appendChild(newImg);
+        }
+      } else {
+        img.parentElement.removeChild(img);
       }
     };
 
@@ -92,25 +120,6 @@
   };
 
   /**
-   * Adds an ad on the map if the pin was pressed or clicked
-   * @param {Object} evt
-   */
-  var pinClickHandler = function (evt) {
-    var target = evt.target;
-    var mapPins = map.querySelectorAll('.map__pin');
-    var targetPin = target.closest('.map__pin');
-    if (!targetPin || target.closest('.map__pin--main')) {
-      evt.stopPropagation();
-    } else {
-      var targetInx = Array.from(mapPins).indexOf(targetPin);
-      UTILS.toggleClass(mapPins, 'map__pin--active', false);
-      UTILS.toggleClass(targetPin, 'map__pin--active', true);
-      closeCard();
-      setAd(adTemplate, window.data.dwellingAds, targetInx - 1);
-    }
-  };
-
-  /**
    * Removes the ad from the map
    */
   var closeCard = function () {
@@ -121,7 +130,8 @@
   var escPressCloseHandler = UTILS.keyPressHandler(UTILS.ESCAPE, closeCard);
 
   window.card = {
-    pinClickHandler: pinClickHandler
+    setAd: setAd,
+    closeCard: closeCard
   };
 
 })();

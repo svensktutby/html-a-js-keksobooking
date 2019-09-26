@@ -67,6 +67,13 @@
     }
   };
 
+  var adFormSubmitHandler = function () {
+    successMessage.classList.remove('hidden');
+    successMessage.addEventListener('click', successClickHandler);
+    document.addEventListener('keydown', successPressEscHandler);
+    adFormResetHandler();
+  };
+
   var successClickHandler = function () {
     successMessage.classList.add('hidden');
     successMessage.removeEventListener('click', successClickHandler);
@@ -97,10 +104,10 @@
   };
 
   /**
-   * Validates and submits adForm
+   * Validates adForm
    * @param {Object} evt
    */
-  var adFormSubmitHandler = function (evt) {
+  var adFormBtnSubmitHandler = function (evt) {
     var invalidRequireds = [];
     for (var i = 0; i < adFormRequireds.length; i++) {
       var adFieldset = adFormRequireds[i].closest('.ad-form__element');
@@ -113,10 +120,11 @@
     }
     if (invalidRequireds.length) {
       evt.preventDefault();
+      window.map.errorHandler('Неправильно заполнены поля, помеченные красной рамкой');
     } else {
-      successMessage.classList.remove('hidden');
-      successMessage.addEventListener('click', successClickHandler);
-      document.addEventListener('keydown', successPressEscHandler);
+      evt.preventDefault();
+      var data = new FormData(adForm);
+      window.backend.save(data, adFormSubmitHandler, window.map.errorHandler);
     }
   };
 
@@ -126,7 +134,7 @@
     adFormTimeout.addEventListener('change', adFormTimeHandler);
     adFormRoomsHandler();
     adFormRoomNumber.addEventListener('change', adFormRoomsHandler);
-    adFormSubmit.addEventListener('click', adFormSubmitHandler);
+    adFormSubmit.addEventListener('click', adFormBtnSubmitHandler);
     adFormReset.addEventListener('click', adFormResetHandler);
   };
 
