@@ -6,6 +6,13 @@
   var map = document.querySelector('.map');
   var mapFiltersContainer = document.querySelector('.map__filters-container');
 
+  var DwellingTypeToRussian = {
+    palace: 'Дворец',
+    flat: 'Квартира',
+    house: 'Дом',
+    bungalo: 'Бунгало'
+  };
+
   /**
    * Writes text if the element has a CSS class
    * @param {Object} nodeItem Target DOM element
@@ -16,32 +23,6 @@
     if (nodeItem.classList.contains(patternClass + '--' + modifier)) {
       nodeItem.textContent = modifier;
     }
-  };
-
-  /**
-   * Returns the type of dwelling in Russian
-   * @param {string} type Type in English
-   * @return {string}
-   */
-  var getDwellingTypeInRussian = function (type) {
-    var dwellingTypeRu = '';
-    switch (type) {
-      case 'palace':
-        dwellingTypeRu = 'Дворец';
-        break;
-      case 'flat':
-        dwellingTypeRu = 'Квартира';
-        break;
-      case 'house':
-        dwellingTypeRu = 'Дом';
-        break;
-      case 'bungalo':
-        dwellingTypeRu = 'Бунгало';
-        break;
-      default:
-        dwellingTypeRu = 'Неизвестный тип жилища';
-    }
-    return dwellingTypeRu;
   };
 
   /**
@@ -66,7 +47,7 @@
     adTitle.textContent = adData.offer.title;
     adAddress.textContent = adData.offer.address;
     adPrice.textContent = adData.offer.price + '₽/ночь';
-    adType.textContent = getDwellingTypeInRussian(adData.offer.type);
+    adType.textContent = DwellingTypeToRussian[adData.offer.type] || 'Неизвестный тип жилища';
     adCapacity.textContent = adData.offer.rooms + ' комнаты для ' + adData.offer.guests + ' гостей';
     adTime.textContent = 'Заезд после ' + adData.offer.checkin + ', выезд до ' + adData.offer.checkout;
     adDescription.textContent = adData.offer.description;

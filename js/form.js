@@ -19,7 +19,7 @@
   var successMessage = document.querySelector('.success');
   var adFormRequireds = adForm.querySelectorAll('[required]');
 
-  var minDwellingPrice = {
+  var MinDwellingPrice = {
     bungalo: 0,
     flat: 1000,
     house: 5000,
@@ -28,7 +28,7 @@
 
   var timeStamps = ['12:00', '13:00', '14:00'];
 
-  var roomForGuest = {
+  var RoomForGuest = {
     '1': ['1'],
     '2': ['1', '2'],
     '3': ['1', '2', '3'],
@@ -36,9 +36,9 @@
   };
 
   var adFormPriceHandler = function () {
-    for (var item in minDwellingPrice) {
+    for (var item in MinDwellingPrice) {
       if (item === adFormType.value) {
-        adFormPrice.placeholder = minDwellingPrice[item];
+        adFormPrice.placeholder = MinDwellingPrice[item];
       }
     }
   };
@@ -55,7 +55,7 @@
   };
 
   var adFormRoomsHandler = function () {
-    var selectedRoomNumber = roomForGuest[adFormRoomNumber.value];
+    var selectedRoomNumber = RoomForGuest[adFormRoomNumber.value];
     for (var i = 0; i < adFormCapacityOptions.length; i++) {
       adFormCapacityOptions[i].disabled = true;
       selectedRoomNumber.forEach(function (item) {

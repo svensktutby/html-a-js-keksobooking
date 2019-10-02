@@ -1,7 +1,7 @@
 'use strict';
 
 (function () {
-  var KEY_CODES = {
+  var KeyCode = {
     ENTER: {
       key: 'Enter',
       keyCode: 13
@@ -133,8 +133,8 @@
   };
 
   window.utils = {
-    ENTER: KEY_CODES.ENTER,
-    ESCAPE: KEY_CODES.ESCAPE,
+    ENTER: KeyCode.ENTER,
+    ESCAPE: KeyCode.ESCAPE,
     getRandomInt: getRandomInt,
     getRandomArrayItem: getRandomArrayItem,
     shuffleArray: shuffleArray,

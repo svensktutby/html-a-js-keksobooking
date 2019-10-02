@@ -4,12 +4,12 @@
   var URL = 'https://js.dump.academy/keksobooking';
   var loadURL = URL + '/data';
 
-  var statusCodesHTTP = {
-    OK: 200,
-    badRequest: 400,
-    unauthorized: 401,
-    notFound: 404,
-    internalServerError: 500,
+  var CodeHTTP = {
+    SUCCESS: 200,
+    BAD_REQUEST_ERROR: 400,
+    UNAUTHORIZED_ERROR: 401,
+    NOT_FOUND_ERROR: 404,
+    SERVER_ERROR: 500,
   };
 
   /**
@@ -27,19 +27,19 @@
 
     xhr.addEventListener('load', function () {
       switch (xhr.status) {
-        case statusCodesHTTP.OK:
+        case CodeHTTP.SUCCESS:
           onLoad(xhr.response);
           break;
-        case statusCodesHTTP.badRequest:
+        case CodeHTTP.BAD_REQUEST_ERROR:
           onError('Неверный запрос');
           break;
-        case statusCodesHTTP.unauthorized:
+        case CodeHTTP.UNAUTHORIZED_ERROR:
           onError('Пользователь не авторизован');
           break;
-        case statusCodesHTTP.notFound:
+        case CodeHTTP.NOT_FOUND_ERROR:
           onError('Ничего не найдено');
           break;
-        case statusCodesHTTP.internalServerError:
+        case CodeHTTP.SERVER_ERROR:
           onError('Внутренняя ошибка сервера');
           break;
         default:

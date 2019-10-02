@@ -15,7 +15,7 @@
   var adForm = document.querySelector('.ad-form');
   var adFormFieldsets = adForm.querySelectorAll('fieldset');
 
-  var pinSize = {
+  var PinSize = {
     WIDTH: 50,
     HEIGHT: 70
   };
@@ -91,7 +91,7 @@
 
   var pinLoadHandler = function (data) {
     dwellingData = data;
-    setPinList(pinList, pinTemplate, pinSize, data);
+    setPinList(pinList, pinTemplate, PinSize, data);
     pinList.addEventListener('click', pinClickHandler);
   };
 
