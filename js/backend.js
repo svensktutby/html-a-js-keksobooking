@@ -21,7 +21,6 @@
    * @param {Object} data Object to send
    */
   var createXHR = function (method, url, onLoad, onError, data) {
-    data = data || null;
     var xhr = new XMLHttpRequest();
     xhr.responseType = 'json';
 
@@ -62,7 +61,7 @@
   };
 
   var load = function (onLoad, onError) {
-    createXHR('GET', loadURL, onLoad, onError);
+    createXHR('GET', loadURL, onLoad, onError, null);
   };
 
   var save = function (data, onLoad, onError) {

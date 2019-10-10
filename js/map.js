@@ -3,10 +3,8 @@
 (function () {
   var UTILS = window.utils;
 
-  var dwellingData;
-
   var map = document.querySelector('.map');
-  var pinList = document.querySelector('.map__pins');
+  var pinListContainer = document.querySelector('.map__pins');
   var mapPinMain = map.querySelector('.map__pin--main');
   var template = document.querySelector('template');
   var pinTemplate = template.content.querySelector('.map__pin');
@@ -14,6 +12,9 @@
 
   var adForm = document.querySelector('.ad-form');
   var adFormFieldsets = adForm.querySelectorAll('fieldset');
+
+  var MAX_PINS_ON_MAP = 5;
+  var housingData = [];
 
   var PinSize = {
     WIDTH: 50,
@@ -23,7 +24,7 @@
   /**
    * Renders Popup Pin
    * @param {Object} pinNode DocumentFragment element
-   * @param {Object} pinData Dwelling data
+   * @param {Object} pinData Housing data
    * @param {Object} size Pin size
    * @return {Object}
    */
@@ -33,6 +34,7 @@
 
     pinItem.style.left = pinData.location.x - (size.WIDTH / 2) + 'px';
     pinItem.style.top = pinData.location.y - size.HEIGHT + 'px';
+    pinItem.dataset.index = '' + pinData.id;
     pinImg.src = pinData.author.avatar;
     pinImg.alt = pinData.offer.title;
     return pinItem;
@@ -41,14 +43,13 @@
   /**
    * Places Popup Pins on the map
    * @param {Object} pinListNode Target DOM element
-   * @param {Object} pinNode DocumentFragment element
-   * @param {Object} size Pin size
-   * @param {Array} pinListData Dwellings data
+   * @param {Array} pinListData Housings data
    */
-  var setPinList = function (pinListNode, pinNode, size, pinListData) {
+  var setPinList = function (pinListNode, pinListData) {
     var fragment = document.createDocumentFragment();
-    pinListData.forEach(function (item) {
-      fragment.appendChild(renderPin(pinNode, item, size));
+    var clonePinListData = pinListData.slice(0, MAX_PINS_ON_MAP);
+    clonePinListData.forEach(function (item) {
+      fragment.appendChild(renderPin(pinTemplate, item, PinSize));
     });
     pinListNode.appendChild(fragment);
   };
@@ -64,17 +65,27 @@
     if (!targetPin || target.closest('.map__pin--main')) {
       evt.stopPropagation();
     } else {
-      var targetInx = Array.from(mapPins).indexOf(targetPin);
+      var targetInx = +targetPin.dataset.index;
       UTILS.toggleClass(mapPins, 'map__pin--active', false);
       UTILS.toggleClass(targetPin, 'map__pin--active', true);
       window.card.closeCard();
-      window.card.setAd(adTemplate, dwellingData, targetInx - 1);
+      window.card.setAd(adTemplate, housingData, targetInx);
     }
+  };
+
+  var successHandler = function (data) {
+    housingData = data;
+    housingData.forEach(function (item, index) {
+      item.id = index;
+    });
+    setPinList(pinListContainer, data);
+    pinListContainer.addEventListener('click', pinClickHandler);
+    window.filter.activateFilters(housingData);
   };
 
   var errorHandler = function (errorMessage) {
     var node = document.createElement('div');
-    var timeout = 5000;
+    var TIMEOUT = 5000;
     node.style = 'z-index: 100; margin: 0 auto; text-align: center; background-color: red;';
     node.style.position = 'fixed';
     node.style.left = 0;
@@ -86,15 +97,8 @@
 
     setTimeout(function () {
       document.body.removeChild(node);
-    }, timeout);
+    }, TIMEOUT);
   };
-
-  var pinLoadHandler = function (data) {
-    dwellingData = data;
-    setPinList(pinList, pinTemplate, PinSize, data);
-    pinList.addEventListener('click', pinClickHandler);
-  };
-
 
   var activatePage = function () {
     UTILS.removeCssClass(map, 'map--faded');
@@ -102,14 +106,14 @@
     UTILS.toggleDisable(adFormFieldsets, false);
 
     mapPinMain.removeEventListener('mousedown', activatePage);
-    window.form.initFormHandlers();
-    window.backend.load(pinLoadHandler, errorHandler);
+    window.form.initAdFormHandlers();
+    window.backend.load(successHandler, errorHandler);
   };
 
   var initPage = function () {
     UTILS.toggleDisable(adFormFieldsets, true);
     window.pin.resetMapPinMain();
-    pinList.removeEventListener('click', pinClickHandler);
+    pinListContainer.removeEventListener('click', pinClickHandler);
     mapPinMain.addEventListener('mousedown', activatePage);
     mapPinMain.addEventListener('mousedown', window.pin.pinMainMousedownHandler);
   };
@@ -117,6 +121,7 @@
   initPage();
 
   window.map = {
+    setPinList: setPinList,
     errorHandler: errorHandler,
     initPage: initPage
   };

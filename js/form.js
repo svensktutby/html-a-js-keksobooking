@@ -4,7 +4,6 @@
   var UTILS = window.utils;
 
   var map = document.querySelector('.map');
-  var mapPinMain = map.querySelector('.map__pin--main');
 
   var adForm = document.querySelector('.ad-form');
   var adFormType = adForm.querySelector('#type');
@@ -19,7 +18,7 @@
   var successMessage = document.querySelector('.success');
   var adFormRequireds = adForm.querySelectorAll('[required]');
 
-  var MinDwellingPrice = {
+  var MinHousingPrice = {
     bungalo: 0,
     flat: 1000,
     house: 5000,
@@ -35,15 +34,23 @@
     '100': ['0']
   };
 
-  var adFormPriceHandler = function () {
-    for (var item in MinDwellingPrice) {
+  var cleanInvalidFields = function () {
+    var invalidElements = adForm.querySelectorAll('.ad-form__element--invalid');
+
+    if (invalidElements.length) {
+      UTILS.toggleClass(invalidElements, 'ad-form__element--invalid', false);
+    }
+  };
+
+  var adFormPriceChangeHandler = function () {
+    for (var item in MinHousingPrice) {
       if (item === adFormType.value) {
-        adFormPrice.placeholder = MinDwellingPrice[item];
+        adFormPrice.placeholder = MinHousingPrice[item];
       }
     }
   };
 
-  var adFormTimeHandler = function (evt) {
+  var adFormTimeChangeHandler = function (evt) {
     var target = evt.target;
     timeStamps.forEach(function (item) {
       if (target === adFormTimein && item === adFormTimein.value) {
@@ -54,7 +61,7 @@
     });
   };
 
-  var adFormRoomsHandler = function () {
+  var adFormRoomsChangeHandler = function () {
     var selectedRoomNumber = RoomForGuest[adFormRoomNumber.value];
     for (var i = 0; i < adFormCapacityOptions.length; i++) {
       adFormCapacityOptions[i].disabled = true;
@@ -86,19 +93,10 @@
     adForm.reset();
     window.map.initPage();
     window.pin.resetMapPinMain();
-    var mapPins = map.querySelectorAll('.map__pin');
-    var invalidElements = adForm.querySelectorAll('.ad-form__element--invalid');
-    UTILS.removeNodeItem(map, '.map__card');
-    mapPins.forEach(function (item) {
-      if (item !== mapPinMain) {
-        item.parentElement.removeChild(item);
-      }
-    });
-    if (invalidElements.length) {
-      invalidElements.forEach(function (item) {
-        UTILS.toggleClass(item, 'ad-form__element--invalid', false);
-      });
-    }
+    window.filter.deactivateFilters();
+    window.filter.removePins();
+    window.card.closeCard();
+    cleanInvalidFields();
     UTILS.toggleClass(map, 'map--faded', true);
     adForm.classList.add('ad-form--disabled');
   };
@@ -128,17 +126,17 @@
     }
   };
 
-  var initFormHandlers = function () {
-    adFormType.addEventListener('change', adFormPriceHandler);
-    adFormTimein.addEventListener('change', adFormTimeHandler);
-    adFormTimeout.addEventListener('change', adFormTimeHandler);
-    adFormRoomsHandler();
-    adFormRoomNumber.addEventListener('change', adFormRoomsHandler);
+  var initAdFormHandlers = function () {
+    adFormType.addEventListener('change', adFormPriceChangeHandler);
+    adFormTimein.addEventListener('change', adFormTimeChangeHandler);
+    adFormTimeout.addEventListener('change', adFormTimeChangeHandler);
+    adFormRoomsChangeHandler();
+    adFormRoomNumber.addEventListener('change', adFormRoomsChangeHandler);
     adFormSubmit.addEventListener('click', adFormBtnSubmitHandler);
     adFormReset.addEventListener('click', adFormResetHandler);
   };
 
   window.form = {
-    initFormHandlers: initFormHandlers
+    initAdFormHandlers: initAdFormHandlers
   };
 })();

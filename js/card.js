@@ -6,7 +6,7 @@
   var map = document.querySelector('.map');
   var mapFiltersContainer = document.querySelector('.map__filters-container');
 
-  var DwellingTypeToRussian = {
+  var HousingTypeToRussian = {
     palace: 'Дворец',
     flat: 'Квартира',
     house: 'Дом',
@@ -28,7 +28,7 @@
   /**
    * Renders an advertising
    * @param {Object} adNode DocumentFragment element
-   * @param {Object} adData Dwelling data
+   * @param {Object} adData Housing data
    * @return {Object}
    */
   var renderAd = function (adNode, adData) {
@@ -47,7 +47,7 @@
     adTitle.textContent = adData.offer.title;
     adAddress.textContent = adData.offer.address;
     adPrice.textContent = adData.offer.price + '₽/ночь';
-    adType.textContent = DwellingTypeToRussian[adData.offer.type] || 'Неизвестный тип жилища';
+    adType.textContent = HousingTypeToRussian[adData.offer.type] || 'Неизвестный тип жилища';
     adCapacity.textContent = adData.offer.rooms + ' комнаты для ' + adData.offer.guests + ' гостей';
     adTime.textContent = 'Заезд после ' + adData.offer.checkin + ', выезд до ' + adData.offer.checkout;
     adDescription.textContent = adData.offer.description;
@@ -85,8 +85,8 @@
   /**
    * Places ad on the map and adds some handlers
    * @param {Object} adNode DocumentFragment element
-   * @param {Object} adData Dwelling data
-   * @param {number} inx Ad index from the Dwelling data
+   * @param {Object} adData Housing data
+   * @param {number} inx Ad index from the Housing data
    */
   var setAd = function (adNode, adData, inx) {
     var fragment = document.createDocumentFragment();
