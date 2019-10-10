@@ -1,7 +1,7 @@
 'use strict';
 
 (function () {
-  var KEY_CODES = {
+  var KeyCode = {
     ENTER: {
       key: 'Enter',
       keyCode: 13
@@ -54,7 +54,7 @@
    */
   var removeEmptyElements = function (list) {
     for (var i = 0; i < list.length; i++) {
-      if (list[i].textContent === '') {
+      if (!list[i].textContent) {
         list[i].parentElement.removeChild(list[i]);
       }
     }
@@ -72,13 +72,26 @@
   };
 
   /**
-   * Removes a DOM element with a CSS class
+   * Removes a DOM element with a CSS selector
    * @param {Object} parentNodeItem Parent DOM element
-   * @param {string} cssClass CSS class of an element (with .point)
+   * @param {string} cssSelector CSS selector of an element
    */
-  var removeNodeItem = function (parentNodeItem, cssClass) {
-    if (parentNodeItem && parentNodeItem.querySelector(cssClass)) {
-      parentNodeItem.removeChild(parentNodeItem.querySelector(cssClass));
+  var removeNodeItem = function (parentNodeItem, cssSelector) {
+    if (parentNodeItem && parentNodeItem.querySelector(cssSelector)) {
+      parentNodeItem.removeChild(parentNodeItem.querySelector(cssSelector));
+    }
+  };
+
+  /**
+   * Removes DOM elements
+   * @param {Object} parentNodeItem Parent DOM element
+   * @param {Object} nodeList
+   */
+  var removeNodeList = function (parentNodeItem, nodeList) {
+    if (parentNodeItem && nodeList.length) {
+      for (var i = 0; i < nodeList.length; i++) {
+        parentNodeItem.removeChild(nodeList[i]);
+      }
     }
   };
 
@@ -132,18 +145,40 @@
     nodeItem.value = text;
   };
 
+  /**
+   * Returns a function, that, as long as it continues to be invoked, will not be triggered
+   * @param {Function} fun The function that will be called
+   * @param {number} delay Debounce interval
+   * @return {Function}
+   */
+  var debounce = function (fun, delay) {
+    var lastTimeout = null;
+
+    return function () {
+      var args = arguments;
+      if (lastTimeout) {
+        window.clearTimeout(lastTimeout);
+      }
+      lastTimeout = window.setTimeout(function () {
+        fun.apply(null, args);
+      }, delay);
+    };
+  };
+
   window.utils = {
-    ENTER: KEY_CODES.ENTER,
-    ESCAPE: KEY_CODES.ESCAPE,
+    ENTER: KeyCode.ENTER,
+    ESCAPE: KeyCode.ESCAPE,
     getRandomInt: getRandomInt,
     getRandomArrayItem: getRandomArrayItem,
     shuffleArray: shuffleArray,
     removeEmptyElements: removeEmptyElements,
     toggleDisable: toggleDisable,
     removeNodeItem: removeNodeItem,
+    removeNodeList: removeNodeList,
     removeCssClass: removeCssClass,
     toggleClass: toggleClass,
     keyPressHandler: keyPressHandler,
-    setInputValue: setInputValue
+    setInputValue: setInputValue,
+    debounce: debounce
   };
 })();
