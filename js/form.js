@@ -27,7 +27,7 @@
 
   var timeStamps = ['12:00', '13:00', '14:00'];
 
-  var RoomForGuest = {
+  var roomForGuest = {
     '1': ['1'],
     '2': ['1', '2'],
     '3': ['1', '2', '3'],
@@ -62,7 +62,7 @@
   };
 
   var adFormRoomsChangeHandler = function () {
-    var selectedRoomNumber = RoomForGuest[adFormRoomNumber.value];
+    var selectedRoomNumber = roomForGuest[adFormRoomNumber.value];
     for (var i = 0; i < adFormCapacityOptions.length; i++) {
       adFormCapacityOptions[i].disabled = true;
       selectedRoomNumber.forEach(function (item) {

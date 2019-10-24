@@ -16,7 +16,7 @@
   var MAX_PINS_ON_MAP = 5;
   var housingData = [];
 
-  var PinSize = {
+  var pinSize = {
     WIDTH: 50,
     HEIGHT: 70
   };
@@ -49,7 +49,7 @@
     var fragment = document.createDocumentFragment();
     var clonePinListData = pinListData.slice(0, MAX_PINS_ON_MAP);
     clonePinListData.forEach(function (item) {
-      fragment.appendChild(renderPin(pinTemplate, item, PinSize));
+      fragment.appendChild(renderPin(pinTemplate, item, pinSize));
     });
     pinListNode.appendChild(fragment);
   };
