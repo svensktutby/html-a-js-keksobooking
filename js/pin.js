@@ -9,14 +9,14 @@
   var adForm = document.querySelector('.ad-form');
   var adFormAddress = adForm.querySelector('#address');
 
-  var MapLimitPoint = {
+  var mapLimitPoint = {
     top: 130,
     bottom: 630,
     left: 0,
     right: parseInt(getComputedStyle(map).width, 10) // max width of map
   };
 
-  var PinMainSize = {
+  var pinMainSize = {
     WIDTH: 62,
     HEIGHT: 82
   };
@@ -44,7 +44,7 @@
     };
   };
 
-  var startMapPinMainAddressValue = getMapPinCoordinates(mapPinMain, PinMainSize);
+  var startMapPinMainAddressValue = getMapPinCoordinates(mapPinMain, pinMainSize);
   var startMapPinMainCoordinates = mapPinMain.getAttribute('style');
 
   var resetMapPinMain = function () {
@@ -55,44 +55,40 @@
   var pinMainMousedownHandler = function (evt) {
     evt.preventDefault();
 
-    var StartCoord = {
-      x: evt.clientX,
-      y: evt.clientY
+    var Coordinate = function (x, y) {
+      this.x = x;
+      this.y = y;
     };
+
+    var startCoord = new Coordinate(evt.clientX, evt.clientY);
 
     var mouseMoveHandler = function (moveEvt) {
       moveEvt.preventDefault();
 
-      var Shift = {
-        x: moveEvt.clientX - StartCoord.x,
-        y: moveEvt.clientY - StartCoord.y
-      };
+      var shift = new Coordinate(moveEvt.clientX - startCoord.x, moveEvt.clientY - startCoord.y);
 
-      StartCoord = {
+      startCoord = {
         x: moveEvt.clientX,
         y: moveEvt.clientY
       };
 
-      var CurrentCoord = {
-        x: mapPinMain.offsetLeft + Shift.x,
-        y: mapPinMain.offsetTop + Shift.y
-      };
+      var currentCoord = new Coordinate(mapPinMain.offsetLeft + shift.x, mapPinMain.offsetTop + shift.y);
 
-      MapLimitPoint.right = parseInt(getComputedStyle(map).width, 10);
+      mapLimitPoint.right = parseInt(getComputedStyle(map).width, 10);
 
-      if (CurrentCoord.x < MapLimitPoint.left) {
-        CurrentCoord.x = mapPinMain.offsetLeft;
-      } else if (CurrentCoord.x > MapLimitPoint.right - PinMainSize.WIDTH) {
-        CurrentCoord.x = mapPinMain.offsetLeft;
+      if (currentCoord.x < mapLimitPoint.left) {
+        currentCoord.x = mapPinMain.offsetLeft;
+      } else if (currentCoord.x > mapLimitPoint.right - pinMainSize.WIDTH) {
+        currentCoord.x = mapPinMain.offsetLeft;
       }
 
-      if (CurrentCoord.y < MapLimitPoint.top || CurrentCoord.y > MapLimitPoint.bottom) {
-        CurrentCoord.y = mapPinMain.offsetTop;
+      if (currentCoord.y < mapLimitPoint.top || currentCoord.y > mapLimitPoint.bottom) {
+        currentCoord.y = mapPinMain.offsetTop;
       }
 
-      mapPinMain.style.left = CurrentCoord.x + 'px';
-      mapPinMain.style.top = CurrentCoord.y + 'px';
-      UTILS.setInputValue(adFormAddress, getAddressValue(getMapPinCoordinates(mapPinMain, PinMainSize)));
+      mapPinMain.style.left = currentCoord.x + 'px';
+      mapPinMain.style.top = currentCoord.y + 'px';
+      UTILS.setInputValue(adFormAddress, getAddressValue(getMapPinCoordinates(mapPinMain, pinMainSize)));
     };
 
     var mouseUpHandler = function (upEvt) {
