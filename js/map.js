@@ -107,6 +107,7 @@
 
     mapPinMain.removeEventListener('mousedown', activatePage);
     window.form.initAdFormHandlers();
+    window.images.addHandlers();
     window.backend.load(successHandler, errorHandler);
   };
 

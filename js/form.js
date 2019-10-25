@@ -96,6 +96,8 @@
     window.filter.deactivateFilters();
     window.filter.removePins();
     window.card.closeCard();
+    window.images.resetLoadedImages();
+    window.images.removeHandlers();
     cleanInvalidFields();
     UTILS.toggleClass(map, 'map--faded', true);
     adForm.classList.add('ad-form--disabled');
